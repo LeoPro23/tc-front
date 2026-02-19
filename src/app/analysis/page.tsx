@@ -87,7 +87,7 @@ export default function AnalysisPage() {
     setDetections([]);
     setError(null);
 
-    addLog("[SISTEMA] ACCEDIENDO AL NÚCLEO NEURAL CROPINTEL...");
+    addLog("[SISTEMA] ACCEDIENDO AL NÚCLEO NEURONAL TOMATOCODE...");
     await new Promise((r) => setTimeout(r, 600));
     addLog("[BUFFER] AISLANDO CAMAS DE BIOMASA...");
     await new Promise((r) => setTimeout(r, 400));
@@ -172,7 +172,7 @@ export default function AnalysisPage() {
               <div className="flex items-center gap-2">
                 <Leaf className="w-3 h-3 text-emerald-500/50 dark:text-[#00ff9d]/50" />
                 <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-mono">
-                  Diagnóstico Neural de Patógenos
+                  Diagnóstico Neuronal de Patógenos
                 </p>
               </div>
             </div>
