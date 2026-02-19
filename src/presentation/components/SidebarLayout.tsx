@@ -16,18 +16,18 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     ];
 
     return (
-        <div className="flex h-screen bg-white text-gray-900">
+        <div className="flex h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+            <aside className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col transition-colors duration-300">
                 {/* Logo */}
-                <div className="p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-800">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-[#FF6347] to-[#32CD32] rounded-lg flex items-center justify-center">
                             <Leaf className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="font-bold text-xl text-gray-900">TomatoCode</h1>
-                            <p className="text-xs text-gray-500">AgriTech AI Platform</p>
+                            <h1 className="font-bold text-xl text-gray-900 dark:text-white">TomatoCode</h1>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">AgriTech AI Platform</p>
                         </div>
                     </div>
                 </div>
@@ -65,7 +65,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                                     "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
                                     isActive
                                         ? "bg-[#FF6347] text-white"
-                                        : "text-gray-700 hover:bg-gray-100"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                                 )}
                             >
                                 <item.icon className="w-5 h-5" />
@@ -76,19 +76,19 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 </nav>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-4 border-t border-gray-200 dark:border-gray-800">
                     <div className="flex items-center gap-3 px-4 py-3">
-                        <div className="w-8 h-8 bg-gray-300 rounded-full" />
+                        <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full" />
                         <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">John Farmer</p>
-                            <p className="text-xs text-gray-500">Farm Admin</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">John Farmer</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Farm Admin</p>
                         </div>
                     </div>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto bg-white">
+            <main className="flex-1 overflow-auto bg-white dark:bg-gray-950 transition-colors duration-300">
                 {children}
             </main>
         </div>

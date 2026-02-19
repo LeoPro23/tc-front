@@ -87,7 +87,6 @@ export default function AnalysisPage() {
     setDetections([]);
     setError(null);
 
-    // Sequence for "Wow" Factor
     addLog("[SYSTEM] ACCESSING CROPINTEL NEURAL CORE...");
     await new Promise((r) => setTimeout(r, 600));
     addLog("[BUFFER] ISOLATING BEDS OF BIOMASS...");
@@ -142,7 +141,6 @@ export default function AnalysisPage() {
 
   const primaryDetection = detections[0] || null;
 
-  // Case-insensitive lookup for recipes
   const getRecipe = (pest: string) => {
     const key = Object.keys(RECIPES).find(
       (k) => k.toLowerCase() === pest.toLowerCase(),
@@ -153,29 +151,29 @@ export default function AnalysisPage() {
   const recipe = primaryDetection ? getRecipe(primaryDetection.pest) : null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white p-6 font-sans selection:bg-[#00ff9d]/30">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white p-6 font-sans transition-colors duration-300">
       {/* Header */}
       <header className="flex items-center justify-between mb-8 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-all group"
+            className="p-2.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl border border-gray-200 dark:border-white/5 transition-all group"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+            <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
           </Link>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-[0_0_15px_rgba(0,255,157,0.1)]">
-              <Dna className="w-6 h-6 text-[#00ff9d]" />
+              <Dna className="w-6 h-6 text-emerald-600 dark:text-[#00ff9d]" />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tighter uppercase italic">
-                CROP<span className="text-[#00ff9d]">INTEL</span>{" "}
-                <span className="text-gray-500 not-italic font-normal">
+                CROP<span className="text-emerald-600 dark:text-[#00ff9d]">INTEL</span>{" "}
+                <span className="text-gray-400 dark:text-gray-500 not-italic font-normal">
                   v4.0
                 </span>
               </h1>
               <div className="flex items-center gap-2">
-                <Leaf className="w-3 h-3 text-[#00ff9d]/50" />
+                <Leaf className="w-3 h-3 text-emerald-500/50 dark:text-[#00ff9d]/50" />
                 <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-mono">
                   Neural Pathogen Diagnosis
                 </p>
@@ -186,12 +184,12 @@ export default function AnalysisPage() {
         <div className="flex items-center gap-4">
           <div className="hidden md:block text-right">
             <div className="flex items-center gap-2 justify-end">
-              <span className="w-1.5 h-1.5 bg-[#00ff9d] rounded-full animate-pulse shadow-[0_0_5px_#00ff9d]"></span>
-              <p className="text-[10px] font-mono text-emerald-400">
+              <span className="w-1.5 h-1.5 bg-emerald-500 dark:bg-[#00ff9d] rounded-full animate-pulse dark:shadow-[0_0_5px_#00ff9d]"></span>
+              <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
                 ML-CORE READY
               </p>
             </div>
-            <p className="text-[9px] text-gray-600 font-mono">LATENCY: 42ms</p>
+            <p className="text-[9px] text-gray-400 dark:text-gray-600 font-mono">LATENCY: 42ms</p>
           </div>
         </div>
       </header>
@@ -199,7 +197,7 @@ export default function AnalysisPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
         {/* Main Analysis Area */}
         <main className="lg:col-span-8 flex flex-col gap-6">
-          <div className="glass-panel rounded-3xl overflow-hidden relative aspect-video flex items-center justify-center border border-white/5 bg-black/40 group">
+          <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-3xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200 dark:border-white/5 group shadow-sm dark:shadow-none">
             <AnimatePresence mode="wait">
               {!selectedImage ? (
                 <motion.div
@@ -210,9 +208,9 @@ export default function AnalysisPage() {
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <div className="relative mb-8">
-                    <div className="absolute inset-0 bg-[#00ff9d]/20 blur-3xl rounded-full"></div>
-                    <div className="w-24 h-24 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center relative z-10 group-hover:border-[#00ff9d]/50 transition-colors">
-                      <Upload className="w-10 h-10 text-[#00ff9d] animate-bounce" />
+                    <div className="absolute inset-0 bg-emerald-500/20 dark:bg-[#00ff9d]/20 blur-3xl rounded-full"></div>
+                    <div className="w-24 h-24 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center relative z-10 group-hover:border-emerald-400/50 dark:group-hover:border-[#00ff9d]/50 transition-colors">
+                      <Upload className="w-10 h-10 text-emerald-600 dark:text-[#00ff9d] animate-bounce" />
                     </div>
                   </div>
                   <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-2">
@@ -223,18 +221,18 @@ export default function AnalysisPage() {
                     and pathogen identification.
                   </p>
                   <div className="flex items-center gap-4">
-                    <div className="h-[1px] w-8 bg-white/10"></div>
-                    <span className="text-[10px] font-mono text-gray-600 tracking-widest uppercase">
+                    <div className="h-[1px] w-8 bg-gray-200 dark:bg-white/10"></div>
+                    <span className="text-[10px] font-mono text-gray-400 dark:text-gray-600 tracking-widest uppercase">
                       Select Source
                     </span>
-                    <div className="h-[1px] w-8 bg-white/10"></div>
+                    <div className="h-[1px] w-8 bg-gray-200 dark:bg-white/10"></div>
                   </div>
                 </motion.div>
               ) : (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="relative w-full h-full flex items-center justify-center bg-black/60"
+                  className="relative w-full h-full flex items-center justify-center bg-gray-100 dark:bg-black/60"
                 >
                   <div className="relative w-full h-full">
                     <NextImage
@@ -270,7 +268,7 @@ export default function AnalysisPage() {
                     )}
                   </AnimatePresence>
 
-                  {/* Scanning HUD Overlay - CINEMATIC VERSION */}
+                  {/* Scanning HUD Overlay */}
                   <AnimatePresence>
                     {isScanning && (
                       <motion.div
@@ -279,10 +277,8 @@ export default function AnalysisPage() {
                         exit={{ opacity: 0 }}
                         className="absolute inset-0 z-40 bg-black/40 backdrop-blur-[2px] overflow-hidden flex items-center justify-center"
                       >
-                        {/* Digital Grid Background */}
                         <div className="absolute inset-0 bg-[linear-gradient(to_right,#00ff9d0d_1px,transparent_1px),linear-gradient(to_bottom,#00ff9d0d_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
 
-                        {/* CENTRAL NEURAL CORE LOADER */}
                         <div className="relative w-64 h-64 flex items-center justify-center">
                           <motion.div
                             animate={{ rotate: 360 }}
@@ -318,7 +314,6 @@ export default function AnalysisPage() {
                           </div>
                         </div>
 
-                        {/* Scanning Laser HUD */}
                         <motion.div
                           animate={{ top: ["10%", "90%"] }}
                           transition={{
@@ -333,7 +328,6 @@ export default function AnalysisPage() {
                           </div>
                         </motion.div>
 
-                        {/* Floating Tech Corners */}
                         <div className="absolute inset-0 p-8 flex flex-col justify-between pointer-events-none">
                           <div className="flex justify-between">
                             <div className="w-12 h-12 border-t-2 border-l-2 border-[#00ff9d]"></div>
@@ -345,7 +339,6 @@ export default function AnalysisPage() {
                           </div>
                         </div>
 
-                        {/* Terminal Logs - High Tech Style */}
                         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full max-w-xl group">
                           <div className="bg-black/90 border-2 border-[#00ff9d]/30 rounded-2xl p-6 font-mono text-[11px] uppercase tracking-widest text-[#00ff9d] shadow-[0_0_50px_rgba(0,255,157,0.2)]">
                             <div className="flex items-center justify-between mb-4 border-b border-[#00ff9d]/20 pb-3">
@@ -431,14 +424,14 @@ export default function AnalysisPage() {
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-[#00ff9d]/10 backdrop-blur-xl border-2 border-[#00ff9d]/50 px-10 py-6 rounded-3xl z-40 shadow-[0_0_40px_rgba(0,255,157,0.2)]"
+                      className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-emerald-50 dark:bg-[#00ff9d]/10 dark:backdrop-blur-xl border-2 border-emerald-400 dark:border-[#00ff9d]/50 px-10 py-6 rounded-3xl z-40 shadow-lg dark:shadow-[0_0_40px_rgba(0,255,157,0.2)]"
                     >
                       <div className="flex flex-col items-center gap-2">
-                        <ShieldCheck className="w-12 h-12 text-[#00ff9d] mb-2" />
-                        <h2 className="text-2xl font-black italic tracking-tighter text-white uppercase">
+                        <ShieldCheck className="w-12 h-12 text-emerald-600 dark:text-[#00ff9d] mb-2" />
+                        <h2 className="text-2xl font-black italic tracking-tighter uppercase">
                           HEALTHY BIOMASS
                         </h2>
-                        <p className="text-[#00ff9d] text-[10px] font-mono tracking-widest font-black">
+                        <p className="text-emerald-600 dark:text-[#00ff9d] text-[10px] font-mono tracking-widest font-black">
                           NO PATHOGEN SIGNATURES FOUND
                         </p>
                       </div>
@@ -448,9 +441,9 @@ export default function AnalysisPage() {
                   {/* Post-Scan Overlay Info */}
                   {!isScanning && detections.length > 0 && (
                     <div className="absolute top-4 right-4 flex flex-col gap-2">
-                      <div className="px-3 py-1.5 bg-black/80 backdrop-blur-md rounded-lg border border-white/10 flex items-center gap-2">
+                      <div className="px-3 py-1.5 bg-white/80 dark:bg-black/80 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/10 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#ff003c] animate-pulse"></div>
-                        <span className="text-[10px] font-mono font-bold uppercase text-white">
+                        <span className="text-[10px] font-mono font-bold uppercase">
                           {" "}
                           Threat Identified{" "}
                         </span>
@@ -463,9 +456,9 @@ export default function AnalysisPage() {
                     <div className="flex gap-2 pointer-events-auto">
                       <button
                         onClick={() => setSelectedImage(null)}
-                        className="p-3 bg-black/60 backdrop-blur-xl rounded-xl border border-white/10 hover:bg-white/10 transition-all group"
+                        className="p-3 bg-white/60 dark:bg-black/60 backdrop-blur-xl rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-all group"
                       >
-                        <Upload className="w-5 h-5 text-gray-500 group-hover:text-white" />
+                        <Upload className="w-5 h-5 text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white" />
                       </button>
                     </div>
                     {!isScanning && (
@@ -473,7 +466,7 @@ export default function AnalysisPage() {
                         onClick={() =>
                           imageFile && performRealAnalysis(imageFile)
                         }
-                        className="px-6 py-3 bg-[#00ff9d]/20 backdrop-blur-xl rounded-xl border border-[#00ff9d]/30 text-[#00ff9d] text-xs font-black italic tracking-widest flex items-center gap-3 pointer-events-auto hover:bg-[#00ff9d]/30 transition-all shadow-[0_0_20px_rgba(0,255,157,0.1)]"
+                        className="px-6 py-3 bg-emerald-100 dark:bg-[#00ff9d]/20 dark:backdrop-blur-xl rounded-xl border border-emerald-400 dark:border-[#00ff9d]/30 text-emerald-700 dark:text-[#00ff9d] text-xs font-black italic tracking-widest flex items-center gap-3 pointer-events-auto hover:bg-emerald-200 dark:hover:bg-[#00ff9d]/30 transition-all shadow-sm dark:shadow-[0_0_20px_rgba(0,255,157,0.1)]"
                       >
                         <Search className="w-4 h-4" /> RE-PROCESS NEURAL LINK
                       </button>
@@ -493,37 +486,37 @@ export default function AnalysisPage() {
 
           {/* Analysis Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between group overflow-hidden relative">
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#00ff9d]/5 rounded-full blur-2xl group-hover:bg-[#00ff9d]/10 transition-colors"></div>
+            <div className="bg-white dark:bg-white/5 dark:backdrop-blur-xl p-6 rounded-3xl border border-gray-200 dark:border-white/5 flex flex-col justify-between group overflow-hidden relative shadow-sm dark:shadow-none">
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/5 dark:bg-[#00ff9d]/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 dark:group-hover:bg-[#00ff9d]/10 transition-colors"></div>
               <div>
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="p-2.5 bg-white/5 rounded-xl border border-white/10">
-                    <Target className="w-5 h-5 text-emerald-400" />
+                  <div className="p-2.5 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10">
+                    <Target className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h3 className="font-black italic text-xs text-gray-300 uppercase tracking-widest">
+                    <h3 className="font-black italic text-xs text-gray-600 dark:text-gray-300 uppercase tracking-widest">
                       Prediction Metadata
                     </h3>
-                    <p className="text-[10px] text-gray-500 font-mono">
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                       MODEL: YOLOv11x-AGRI
                     </p>
                   </div>
                 </div>
                 <div className="space-y-3 font-mono">
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-gray-600 uppercase">
+                    <span className="text-gray-500 dark:text-gray-600 uppercase">
                       Detection Count
                     </span>
-                    <span className="text-white font-bold">
+                    <span className="font-bold">
                       {detections.length} Targets
                     </span>
                   </div>
-                  <div className="flex justify-between text-[10px] pt-3 border-t border-white/5">
-                    <span className="text-gray-600 uppercase flex items-center gap-1">
-                      <Thermometer className="w-3 h-3 text-[#00ff9d]" />{" "}
+                  <div className="flex justify-between text-[10px] pt-3 border-t border-gray-100 dark:border-white/5">
+                    <span className="text-gray-500 dark:text-gray-600 uppercase flex items-center gap-1">
+                      <Thermometer className="w-3 h-3 text-emerald-500 dark:text-[#00ff9d]" />{" "}
                       Bio-Thermal Reading
                     </span>
-                    <span className="text-white font-bold">
+                    <span className="font-bold">
                       98.6°F // STABLE
                     </span>
                   </div>
@@ -531,16 +524,16 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            <div className="glass-panel p-6 rounded-3xl border border-white/5 border-l-[#ff003c] border-l-4">
+            <div className="bg-white dark:bg-white/5 dark:backdrop-blur-xl p-6 rounded-3xl border border-gray-200 dark:border-white/5 border-l-[#ff003c] border-l-4 shadow-sm dark:shadow-none">
               <div className="flex items-center gap-4 mb-4">
-                <div className="p-2.5 bg-[#ff003c]/10 rounded-xl border border-[#ff003c]/20">
+                <div className="p-2.5 bg-red-50 dark:bg-[#ff003c]/10 rounded-xl border border-red-200 dark:border-[#ff003c]/20">
                   <ShieldAlert className="w-5 h-5 text-[#ff003c]" />
                 </div>
                 <div>
-                  <h3 className="font-black italic text-xs text-gray-300 uppercase tracking-widest">
+                  <h3 className="font-black italic text-xs text-gray-600 dark:text-gray-300 uppercase tracking-widest">
                     Biosecurity Protocol
                   </h3>
-                  <p className="text-[10px] text-gray-500 font-mono">
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                     STATUS: {primaryDetection ? "HIGH PRIORITY" : "CLEAR"}
                   </p>
                 </div>
@@ -556,9 +549,9 @@ export default function AnalysisPage() {
 
         {/* Sidebar - Agronomic Recipe */}
         <aside className="lg:col-span-4 flex flex-col gap-6">
-          <div className="glass-panel p-8 rounded-[2rem] border border-white/5 flex flex-col h-full bg-gradient-to-b from-black/40 to-transparent">
+          <div className="bg-white dark:bg-gradient-to-b dark:from-black/40 dark:to-transparent dark:backdrop-blur-xl p-8 rounded-[2rem] border border-gray-200 dark:border-white/5 flex flex-col h-full shadow-sm dark:shadow-none">
             <h2 className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
-              <span className="w-2 h-2 bg-[#00ff9d] rounded-full"></span>{" "}
+              <span className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full"></span>{" "}
               AGRI-RECIPE LOG
             </h2>
 
@@ -584,14 +577,14 @@ export default function AnalysisPage() {
                       visible: { y: 0, opacity: 1 },
                     }}
                   >
-                    <p className="text-[10px] font-mono text-gray-600 uppercase mb-2">
+                    <p className="text-[10px] font-mono text-gray-400 dark:text-gray-600 uppercase mb-2">
                       Target Pathogen
                     </p>
                     <div className="flex items-center gap-4">
-                      <h3 className="text-4xl font-black italic tracking-tighter text-white uppercase drop-shadow-[0_0_20px_#ff003c44]">
+                      <h3 className="text-4xl font-black italic tracking-tighter uppercase dark:drop-shadow-[0_0_20px_#ff003c44]">
                         {primaryDetection?.pest}
                       </h3>
-                      <div className="px-3 py-1 bg-[#ff003c] text-white text-[10px] font-black rounded border-2 border-white/10 shadow-[0_0_15px_#ff003c]">
+                      <div className="px-3 py-1 bg-[#ff003c] text-white text-[10px] font-black rounded border-2 border-red-300 dark:border-white/10 shadow-lg dark:shadow-[0_0_15px_#ff003c]">
                         POS
                       </div>
                     </div>
@@ -606,16 +599,16 @@ export default function AnalysisPage() {
                       className="group relative"
                     >
                       <div className="absolute -inset-1 bg-gradient-to-r from-[#FFA500]/20 to-transparent rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                      <div className="relative p-6 bg-white/5 rounded-3xl border border-white/5 group-hover:border-[#FFA500]/40 transition-all duration-300">
+                      <div className="relative p-6 bg-gray-50 dark:bg-white/5 rounded-3xl border border-gray-200 dark:border-white/5 group-hover:border-[#FFA500]/40 transition-all duration-300">
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="p-3 bg-[#FFA500]/10 rounded-2xl">
+                          <div className="p-3 bg-orange-50 dark:bg-[#FFA500]/10 rounded-2xl">
                             <Zap className="w-5 h-5 text-[#FFA500]" />
                           </div>
                           <p className="text-[11px] font-mono text-gray-500 uppercase tracking-widest">
                             Recommended Product
                           </p>
                         </div>
-                        <p className="text-xl font-black text-white leading-tight italic">
+                        <p className="text-xl font-black leading-tight italic">
                           {recipe.product}
                         </p>
                       </div>
@@ -629,16 +622,16 @@ export default function AnalysisPage() {
                       className="group relative"
                     >
                       <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-transparent rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                      <div className="relative p-6 bg-white/5 rounded-3xl border border-white/5 group-hover:border-blue-400/40 transition-all duration-300">
+                      <div className="relative p-6 bg-gray-50 dark:bg-white/5 rounded-3xl border border-gray-200 dark:border-white/5 group-hover:border-blue-400/40 transition-all duration-300">
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="p-3 bg-blue-500/10 rounded-2xl">
-                            <TrendingUp className="w-5 h-5 text-blue-400" />
+                          <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-2xl">
+                            <TrendingUp className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                           </div>
                           <p className="text-[11px] font-mono text-gray-500 uppercase tracking-widest">
                             Application Dosage
                           </p>
                         </div>
-                        <p className="text-xl font-black text-white leading-tight italic">
+                        <p className="text-xl font-black leading-tight italic">
                           {recipe.dose}
                         </p>
                       </div>
@@ -649,20 +642,20 @@ export default function AnalysisPage() {
                         hidden: { x: 20, opacity: 0 },
                         visible: { x: 0, opacity: 1 },
                       }}
-                      className="relative p-6 bg-[#00ff9d]/5 rounded-3xl border-2 border-[#00ff9d]/20 shadow-[0_0_30px_#00ff9d0a] overflow-hidden group"
+                      className="relative p-6 bg-emerald-50 dark:bg-[#00ff9d]/5 rounded-3xl border-2 border-emerald-200 dark:border-[#00ff9d]/20 shadow-sm dark:shadow-[0_0_30px_#00ff9d0a] overflow-hidden group"
                     >
                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                        <ShieldCheck className="w-16 h-16 text-[#00ff9d]" />
+                        <ShieldCheck className="w-16 h-16 text-emerald-500 dark:text-[#00ff9d]" />
                       </div>
                       <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-[#00ff9d]/20 rounded-2xl shadow-[0_0_15px_#00ff9d22]">
-                          <ShieldCheck className="w-5 h-5 text-[#00ff9d]" />
+                        <div className="p-3 bg-emerald-100 dark:bg-[#00ff9d]/20 rounded-2xl dark:shadow-[0_0_15px_#00ff9d22]">
+                          <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-[#00ff9d]" />
                         </div>
-                        <p className="text-[11px] font-mono text-[#00ff9d] uppercase font-black tracking-widest">
+                        <p className="text-[11px] font-mono text-emerald-700 dark:text-[#00ff9d] uppercase font-black tracking-widest">
                           Operational Guidance
                         </p>
                       </div>
-                      <p className="text-sm text-emerald-100/80 leading-relaxed font-bold italic relative z-10">
+                      <p className="text-sm text-emerald-800 dark:text-emerald-100/80 leading-relaxed font-bold italic relative z-10">
                         {recipe.method}
                       </p>
                     </motion.div>
@@ -673,9 +666,9 @@ export default function AnalysisPage() {
                       hidden: { opacity: 0 },
                       visible: { opacity: 1 },
                     }}
-                    className="pt-8 border-t border-white/5"
+                    className="pt-8 border-t border-gray-200 dark:border-white/5"
                   >
-                    <button className="group w-full py-5 bg-white/5 border-2 border-white/10 rounded-3xl text-[11px] font-mono text-gray-500 uppercase tracking-[0.3em] hover:bg-[#00ff9d]/10 hover:border-[#00ff9d]/50 hover:text-white transition-all duration-300 flex items-center justify-center gap-4">
+                    <button className="group w-full py-5 bg-gray-100 dark:bg-white/5 border-2 border-gray-200 dark:border-white/10 rounded-3xl text-[11px] font-mono text-gray-500 uppercase tracking-[0.3em] hover:bg-emerald-50 dark:hover:bg-[#00ff9d]/10 hover:border-emerald-400 dark:hover:border-[#00ff9d]/50 hover:text-gray-900 dark:hover:text-white transition-all duration-300 flex items-center justify-center gap-4">
                       <span>Generate PDF Report</span>
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -683,7 +676,7 @@ export default function AnalysisPage() {
                 </motion.div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center opacity-30 grayscale saturate-0">
-                  <Cpu className="w-16 h-16 text-gray-600 mb-6" />
+                  <Cpu className="w-16 h-16 text-gray-400 dark:text-gray-600 mb-6" />
                   <p className="text-[10px] font-mono uppercase tracking-[0.2em]">
                     Awaiting Data Buffer...
                   </p>
@@ -717,5 +710,3 @@ export default function AnalysisPage() {
     </div>
   );
 }
-
-// Add these Lucide icons to the import above if missing: TrendingUp
