@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, History, FileText, Settings, Leaf } from "lucide-react";
+import { LayoutDashboard, History, FileText, Settings, Leaf, ScanLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +30,27 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                             <p className="text-xs text-gray-500">AgriTech AI Platform</p>
                         </div>
                     </div>
+                </div>
+
+                {/* Scan CTA Button */}
+                <div className="px-4 pt-4">
+                    <Link
+                        href="/scan"
+                        className="group relative flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-lg active:scale-95"
+                        style={{
+                            background: "linear-gradient(135deg, #FF6347 0%, #FF4500 50%, #32CD32 100%)",
+                            boxShadow: "0 4px 15px rgba(255, 99, 71, 0.4)",
+                        }}
+                    >
+                        <span
+                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            style={{
+                                background: "linear-gradient(135deg, #FF4500 0%, #FF6347 50%, #228B22 100%)",
+                            }}
+                        />
+                        <ScanLine className="w-5 h-5 relative z-10 group-hover:animate-pulse" />
+                        <span className="relative z-10 tracking-wide">Escanear Planta</span>
+                    </Link>
                 </div>
 
                 {/* Navigation */}
