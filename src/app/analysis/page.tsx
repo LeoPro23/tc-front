@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import NextImage from "next/image";
 import {
@@ -63,6 +63,47 @@ export default function AnalysisPage() {
   const [detections, setDetections] = useState<Detection[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const [imgRect, setImgRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+
+  // Compute the rendered image rect inside object-contain container
+  const computeImgRect = useCallback(() => {
+    const container = containerRef.current;
+    if (!container || !imgNaturalSize) return;
+    const cw = container.clientWidth;
+    const ch = container.clientHeight;
+    const { w: nw, h: nh } = imgNaturalSize;
+    const scale = Math.min(cw / nw, ch / nh);
+    const rw = nw * scale;
+    const rh = nh * scale;
+    setImgRect({
+      left: (cw - rw) / 2,
+      top: (ch - rh) / 2,
+      width: rw,
+      height: rh,
+    });
+  }, [imgNaturalSize]);
+
+  // Load natural image dimensions when a new image is selected
+  useEffect(() => {
+    if (!selectedImage) { setImgNaturalSize(null); setImgRect(null); return; }
+    const img = new window.Image();
+    img.onload = () => {
+      setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+    };
+    img.src = selectedImage;
+  }, [selectedImage]);
+
+  // Recalculate on resize or when natural size is known
+  useEffect(() => {
+    computeImgRect();
+    const container = containerRef.current;
+    if (!container) return;
+    const ro = new ResizeObserver(() => computeImgRect());
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [computeImgRect]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -234,7 +275,7 @@ export default function AnalysisPage() {
                   animate={{ opacity: 1 }}
                   className="relative w-full h-full flex items-center justify-center bg-gray-100 dark:bg-black/60"
                 >
-                  <div className="relative w-full h-full">
+                  <div ref={containerRef} className="relative w-full h-full">
                     <NextImage
                       src={selectedImage}
                       alt="Muestra"
@@ -395,12 +436,12 @@ export default function AnalysisPage() {
                           damping: 20,
                         }}
                         className="absolute border-2 border-[#ff003c] rounded-lg shadow-[0_0_30px_rgba(255,0,60,0.4)] z-30 pointer-events-none group/box"
-                        style={{
-                          left: `${(det.box[0] / 640) * 100}%`,
-                          top: `${(det.box[1] / 640) * 100}%`,
-                          width: `${((det.box[2] - det.box[0]) / 640) * 100}%`,
-                          height: `${((det.box[3] - det.box[1]) / 640) * 100}%`,
-                        }}
+                        style={imgRect && imgNaturalSize ? {
+                          left: `${imgRect.left + (det.box[0] / imgNaturalSize.w) * imgRect.width}px`,
+                          top: `${imgRect.top + (det.box[1] / imgNaturalSize.h) * imgRect.height}px`,
+                          width: `${((det.box[2] - det.box[0]) / imgNaturalSize.w) * imgRect.width}px`,
+                          height: `${((det.box[3] - det.box[1]) / imgNaturalSize.h) * imgRect.height}px`,
+                        } : { display: 'none' }}
                       >
                         <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white -translate-x-1 -translate-y-1"></div>
                         <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-white translate-x-1 -translate-y-1"></div>
