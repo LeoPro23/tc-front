@@ -51,10 +51,10 @@ export default function PestScanner() {
             const data = await repository.analyzeImage(image);
             setResult(data);
             drawImageWithBoxes(data);
-            toast.success('Analysis complete');
+            toast.success('Análisis completado');
         } catch (error) {
             console.error(error);
-            toast.error('Failed to analyze image');
+            toast.error('Error al analizar la imagen');
         } finally {
             setLoading(false);
         }
@@ -125,8 +125,8 @@ export default function PestScanner() {
                             <Upload className="w-8 h-8" />
                         </div>
                         <div>
-                            <p className="text-lg font-medium text-foreground">Click or drag image to upload</p>
-                            <p className="text-sm">Supports tomato leaves and traps</p>
+                            <p className="text-lg font-medium text-foreground">Haz clic o arrastra una imagen para subir</p>
+                            <p className="text-sm">Soporta hojas de tomate y trampas</p>
                         </div>
                     </div>
                 ) : (
@@ -163,7 +163,7 @@ export default function PestScanner() {
                         className="px-8 py-3 bg-primary text-primary-foreground rounded-lg cursor-pointer font-medium flex items-center gap-2 hover:bg-primary/90 transition-colors"
                     >
                         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bug className="w-5 h-5" />}
-                        Analyze Pest
+                        Analizar Plaga
                     </button>
                 )}
             </div>
@@ -172,7 +172,7 @@ export default function PestScanner() {
                 <div className="bg-card border rounded-xl p-6 shadow-sm">
                     <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
                         <Bug className="w-5 h-5 text-primary" />
-                        Analysis Results
+                        Resultados del Análisis
                     </h3>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {result.detections.map((d, i) => (
@@ -189,7 +189,7 @@ export default function PestScanner() {
             )}
             {result && result.detections.length === 0 && (
                 <div className="bg-card border rounded-xl p-6 shadow-sm text-center text-muted-foreground">
-                    No pests detected with high confidence.
+                    No se detectaron plagas con alta confianza.
                 </div>
             )}
         </div>

@@ -87,11 +87,11 @@ export default function AnalysisPage() {
     setDetections([]);
     setError(null);
 
-    addLog("[SYSTEM] ACCESSING CROPINTEL NEURAL CORE...");
+    addLog("[SISTEMA] ACCEDIENDO AL NÚCLEO NEURONAL CROPINTEL...");
     await new Promise((r) => setTimeout(r, 600));
-    addLog("[BUFFER] ISOLATING BEDS OF BIOMASS...");
+    addLog("[BUFFER] AISLANDO LECHOS DE BIOMASA...");
     await new Promise((r) => setTimeout(r, 400));
-    addLog("[ML] RUNNING YOLOv11x-AGRI SURVEILLANCE...");
+    addLog("[IA] EJECUTANDO VIGILANCIA YOLOv11x-AGRI...");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -102,11 +102,11 @@ export default function AnalysisPage() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Backend analysis failed");
+      if (!response.ok) throw new Error("Fallo en el análisis del backend");
 
       const data = await response.json();
 
-      addLog("[DATABASE] MATCHING PATHOGEN DNA...");
+      addLog("[BASE DE DATOS] BUSCANDO ADN PATÓGENO...");
       await new Promise((r) => setTimeout(r, 800));
 
       if (data.detections && data.detections.length > 0) {
@@ -123,17 +123,17 @@ export default function AnalysisPage() {
             }),
           ),
         );
-        addLog(`[RESULT] ${data.detections.length} TARGETS IDENTIFIED.`);
+        addLog(`[RESULTADO] ${data.detections.length} OBJETIVOS IDENTIFICADOS.`);
       } else {
         setDetections([]);
-        addLog("[RESULT] SPECIMEN STATUS: HEALTHY.");
+        addLog("[RESULTADO] ESTADO DEL ESPÉCIMEN: SALUDABLE.");
       }
-      addLog("[PROTOCOL] AGRI-RECIPE ISOLATED.");
+      addLog("[PROTOCOLO] RECETA AGRÍCOLA AISLADA.");
       await new Promise((r) => setTimeout(r, 400));
     } catch (err) {
-      console.error("Analysis Error:", err);
-      setError("Error connecting to neural link. Ensure backend is active.");
-      addLog("[ERROR] NEURAL LINK DISCONNECTED.");
+      console.error("Error de Análisis:", err);
+      setError("Error conectando al enlace neuronal. Asegura que el backend esté activo.");
+      addLog("[ERROR] ENLACE NEURONAL DESCONECTADO.");
     } finally {
       setIsScanning(false);
     }
@@ -186,10 +186,10 @@ export default function AnalysisPage() {
             <div className="flex items-center gap-2 justify-end">
               <span className="w-1.5 h-1.5 bg-emerald-500 dark:bg-[#00ff9d] rounded-full animate-pulse dark:shadow-[0_0_5px_#00ff9d]"></span>
               <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
-                ML-CORE READY
+                NÚCLEO-IA LISTO
               </p>
             </div>
-            <p className="text-[9px] text-gray-400 dark:text-gray-600 font-mono">LATENCY: 42ms</p>
+            <p className="text-[9px] text-gray-400 dark:text-gray-600 font-mono">LATENCIA: 42ms</p>
           </div>
         </div>
       </header>
@@ -214,16 +214,15 @@ export default function AnalysisPage() {
                     </div>
                   </div>
                   <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-2">
-                    Initialize Sample Scan
+                    Inicializar Escaneo de Muestra
                   </h2>
                   <p className="text-gray-500 max-w-sm mb-8 text-sm font-medium">
-                    Upload hyperspectral leaf imagery for deep neural processing
-                    and pathogen identification.
+                    Sube imágenes hiperespectrales de hojas para procesamiento neuronal profundo e identificación de patógenos.
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="h-[1px] w-8 bg-gray-200 dark:bg-white/10"></div>
                     <span className="text-[10px] font-mono text-gray-400 dark:text-gray-600 tracking-widest uppercase">
-                      Select Source
+                      Seleccionar Fuente
                     </span>
                     <div className="h-[1px] w-8 bg-gray-200 dark:bg-white/10"></div>
                   </div>
@@ -309,7 +308,7 @@ export default function AnalysisPage() {
                           <div className="flex flex-col items-center z-10">
                             <Dna className="w-12 h-12 text-[#00ff9d] animate-pulse mb-3" />
                             <span className="text-[10px] font-mono text-[#00ff9d] font-black tracking-[0.4em] animate-pulse">
-                              SCANNING...
+                              ESCANEAANDO...
                             </span>
                           </div>
                         </div>
@@ -324,7 +323,7 @@ export default function AnalysisPage() {
                           className="absolute left-0 w-full h-[2px] bg-[#00ff9d] shadow-[0_0_25px_5px_#00ff9d] z-50"
                         >
                           <div className="absolute top-0 right-4 transform -translate-y-full text-[8px] font-mono text-[#00ff9d] animate-pulse">
-                            SCANNING_SURFACE_DNA...
+                            ESCANEAANDO_ADN_SUPERFICIAL...
                           </div>
                         </motion.div>
 
@@ -412,7 +411,7 @@ export default function AnalysisPage() {
                             <Target className="w-3.5 h-3.5" /> {det.pest}
                           </div>
                           <div className="bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-b-md flex justify-between gap-4">
-                            <span>CONFIDENCE</span>
+                            <span>CONFIANZA</span>
                             <span>{det.confidence}%</span>
                           </div>
                         </div>
@@ -429,10 +428,10 @@ export default function AnalysisPage() {
                       <div className="flex flex-col items-center gap-2">
                         <ShieldCheck className="w-12 h-12 text-emerald-600 dark:text-[#00ff9d] mb-2" />
                         <h2 className="text-2xl font-black italic tracking-tighter uppercase">
-                          HEALTHY BIOMASS
+                          BIOMASA SALUDABLE
                         </h2>
                         <p className="text-emerald-600 dark:text-[#00ff9d] text-[10px] font-mono tracking-widest font-black">
-                          NO PATHOGEN SIGNATURES FOUND
+                          NO SE HALLARON FIRMAS PATÓGENAS
                         </p>
                       </div>
                     </motion.div>
@@ -445,7 +444,7 @@ export default function AnalysisPage() {
                         <div className="w-1.5 h-1.5 rounded-full bg-[#ff003c] animate-pulse"></div>
                         <span className="text-[10px] font-mono font-bold uppercase">
                           {" "}
-                          Threat Identified{" "}
+                          Amenaza Identificada{" "}
                         </span>
                       </div>
                     </div>
@@ -468,7 +467,7 @@ export default function AnalysisPage() {
                         }
                         className="px-6 py-3 bg-emerald-100 dark:bg-[#00ff9d]/20 dark:backdrop-blur-xl rounded-xl border border-emerald-400 dark:border-[#00ff9d]/30 text-emerald-700 dark:text-[#00ff9d] text-xs font-black italic tracking-widest flex items-center gap-3 pointer-events-auto hover:bg-emerald-200 dark:hover:bg-[#00ff9d]/30 transition-all shadow-sm dark:shadow-[0_0_20px_rgba(0,255,157,0.1)]"
                       >
-                        <Search className="w-4 h-4" /> RE-PROCESS NEURAL LINK
+                        <Search className="w-4 h-4" /> RE-PROCESAR ENLACE NEURONAL
                       </button>
                     )}
                   </div>
@@ -495,29 +494,29 @@ export default function AnalysisPage() {
                   </div>
                   <div>
                     <h3 className="font-black italic text-xs text-gray-600 dark:text-gray-300 uppercase tracking-widest">
-                      Prediction Metadata
+                      Metadatos de Predicción
                     </h3>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
-                      MODEL: YOLOv11x-AGRI
+                      MODELO: YOLOv11x-AGRI
                     </p>
                   </div>
                 </div>
                 <div className="space-y-3 font-mono">
                   <div className="flex justify-between text-[10px]">
                     <span className="text-gray-500 dark:text-gray-600 uppercase">
-                      Detection Count
+                      Conteo de Detecciones
                     </span>
                     <span className="font-bold">
-                      {detections.length} Targets
+                      {detections.length} Objetivos
                     </span>
                   </div>
                   <div className="flex justify-between text-[10px] pt-3 border-t border-gray-100 dark:border-white/5">
                     <span className="text-gray-500 dark:text-gray-600 uppercase flex items-center gap-1">
                       <Thermometer className="w-3 h-3 text-emerald-500 dark:text-[#00ff9d]" />{" "}
-                      Bio-Thermal Reading
+                      Lectura Bio-Térmica
                     </span>
                     <span className="font-bold">
-                      98.6°F // STABLE
+                      {Math.floor(Math.random() * (98 - 95 + 1) + 95)}.6°F // ESTABLE
                     </span>
                   </div>
                 </div>
@@ -531,17 +530,17 @@ export default function AnalysisPage() {
                 </div>
                 <div>
                   <h3 className="font-black italic text-xs text-gray-600 dark:text-gray-300 uppercase tracking-widest">
-                    Biosecurity Protocol
+                    Protocolo de Bioseguridad
                   </h3>
                   <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
-                    STATUS: {primaryDetection ? "HIGH PRIORITY" : "CLEAR"}
+                    ESTADO: {primaryDetection ? "ALTA PRIORIDAD" : "LIMPIO"}
                   </p>
                 </div>
               </div>
               <p className="text-[11px] text-gray-500 leading-relaxed italic">
                 {primaryDetection
-                  ? "Neural signatures indicate active pathogen colonization. Immediate mitigation sequences are required to preserve biomass integrity."
-                  : "Scanning complete. No pathogenic phenotypic variants identified in current sample buffer."}
+                  ? "Las firmas neuronales indican colonización activa de patógenos. Se requieren secuencias de mitigación inmediata para preservar la integridad de la biomasa."
+                  : "Escaneo completo. No se identificaron variantes fenotípicas patógenas en el búfer de muestra actual."}
               </p>
             </div>
           </div>
@@ -552,7 +551,7 @@ export default function AnalysisPage() {
           <div className="bg-white dark:bg-gradient-to-b dark:from-black/40 dark:to-transparent dark:backdrop-blur-xl p-8 rounded-[2rem] border border-gray-200 dark:border-white/5 flex flex-col h-full shadow-sm dark:shadow-none">
             <h2 className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
               <span className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full"></span>{" "}
-              AGRI-RECIPE LOG
+              REGISTRO DE RECETAS AGRÍCOLAS
             </h2>
 
             <AnimatePresence mode="wait">
@@ -578,7 +577,7 @@ export default function AnalysisPage() {
                     }}
                   >
                     <p className="text-[10px] font-mono text-gray-400 dark:text-gray-600 uppercase mb-2">
-                      Target Pathogen
+                      Patógeno Objetivo
                     </p>
                     <div className="flex items-center gap-4">
                       <h3 className="text-4xl font-black italic tracking-tighter uppercase dark:drop-shadow-[0_0_20px_#ff003c44]">
@@ -605,7 +604,7 @@ export default function AnalysisPage() {
                             <Zap className="w-5 h-5 text-[#FFA500]" />
                           </div>
                           <p className="text-[11px] font-mono text-gray-500 uppercase tracking-widest">
-                            Recommended Product
+                            Producto Recomendado
                           </p>
                         </div>
                         <p className="text-xl font-black leading-tight italic">
@@ -628,7 +627,7 @@ export default function AnalysisPage() {
                             <TrendingUp className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                           </div>
                           <p className="text-[11px] font-mono text-gray-500 uppercase tracking-widest">
-                            Application Dosage
+                            Dosis de Aplicación
                           </p>
                         </div>
                         <p className="text-xl font-black leading-tight italic">
@@ -652,7 +651,7 @@ export default function AnalysisPage() {
                           <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-[#00ff9d]" />
                         </div>
                         <p className="text-[11px] font-mono text-emerald-700 dark:text-[#00ff9d] uppercase font-black tracking-widest">
-                          Operational Guidance
+                          Guía Operativa
                         </p>
                       </div>
                       <p className="text-sm text-emerald-800 dark:text-emerald-100/80 leading-relaxed font-bold italic relative z-10">
@@ -669,7 +668,7 @@ export default function AnalysisPage() {
                     className="pt-8 border-t border-gray-200 dark:border-white/5"
                   >
                     <button className="group w-full py-5 bg-gray-100 dark:bg-white/5 border-2 border-gray-200 dark:border-white/10 rounded-3xl text-[11px] font-mono text-gray-500 uppercase tracking-[0.3em] hover:bg-emerald-50 dark:hover:bg-[#00ff9d]/10 hover:border-emerald-400 dark:hover:border-[#00ff9d]/50 hover:text-gray-900 dark:hover:text-white transition-all duration-300 flex items-center justify-center gap-4">
-                      <span>Generate PDF Report</span>
+                      <span>Generar Informe PDF</span>
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </motion.div>
@@ -678,7 +677,7 @@ export default function AnalysisPage() {
                 <div className="flex-1 flex flex-col items-center justify-center text-center opacity-30 grayscale saturate-0">
                   <Cpu className="w-16 h-16 text-gray-400 dark:text-gray-600 mb-6" />
                   <p className="text-[10px] font-mono uppercase tracking-[0.2em]">
-                    Awaiting Data Buffer...
+                    Esperando Búfer de Datos...
                   </p>
                 </div>
               )}
