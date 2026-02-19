@@ -24,7 +24,7 @@ export function ScanItem({
       <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 group-hover:border-emerald-400 dark:group-hover:border-[#00ff9d]/50 transition-colors">
         <ImageWithFallback
           src={image}
-          alt="Tomato leaf scan"
+          alt="Escaneo de hoja de tomate"
           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
         />
         {/* Scanning line effect on hover */}
@@ -35,11 +35,11 @@ export function ScanItem({
         <div className="flex items-center justify-between mb-1.5">
           <span
             className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter italic ${status === "healthy"
-                ? "bg-emerald-100 dark:bg-[#00ff9d]/10 text-emerald-700 dark:text-[#00ff9d] border border-emerald-200 dark:border-[#00ff9d]/20"
-                : "bg-red-100 dark:bg-[#ff003c]/10 text-red-700 dark:text-[#ff003c] border border-red-200 dark:border-[#ff003c]/20"
+              ? "bg-emerald-100 dark:bg-[#00ff9d]/10 text-emerald-700 dark:text-[#00ff9d] border border-emerald-200 dark:border-[#00ff9d]/20"
+              : "bg-red-100 dark:bg-[#ff003c]/10 text-red-700 dark:text-[#ff003c] border border-red-200 dark:border-[#ff003c]/20"
               }`}
           >
-            {status === "healthy" ? "CLEAN SAMPLE" : "PATHOGEN DETECTED"}
+            {status === "healthy" ? "MUESTRA LIMPIA" : "PATÓGENO DETECTADO"}
           </span>
           <span className="text-[10px] font-mono text-gray-500 tracking-tighter">
             {timestamp}
@@ -52,7 +52,7 @@ export function ScanItem({
           </p>
         ) : (
           <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase italic tracking-tighter">
-            Healthy Specimen
+            Espécimen Saludable
           </p>
         )}
 

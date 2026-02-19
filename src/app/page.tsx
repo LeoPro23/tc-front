@@ -39,9 +39,9 @@ const recentScans = [
     image:
       "https://images.unsplash.com/photo-1762608292626-a384d1cc401f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBsZWFmJTIwZGlzZWFzZSUyMGNsb3NldXB8ZW58MXx8fHwxNzcwODY4NTcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     status: "infected" as const,
-    pest: "Whitefly Infestation",
+    pest: "Infestación de Mosca Blanca",
     confidence: 98,
-    timestamp: "2 hours ago",
+    timestamp: "Hace 2 horas",
   },
   {
     id: "2",
@@ -49,7 +49,7 @@ const recentScans = [
       "https://images.unsplash.com/photo-1768113802430-dcb7c874407f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwdG9tYXRvJTIwcGxhbnQlMjBsZWFmfGVufDF8fHx8MTc3MDg2ODU3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
     status: "healthy" as const,
     confidence: 95,
-    timestamp: "5 hours ago",
+    timestamp: "Hace 5 horas",
   },
   {
     id: "3",
@@ -57,7 +57,7 @@ const recentScans = [
       "https://images.unsplash.com/photo-1720487222334-f91d9d74c852?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBncmVlbmhvdXNlJTIwYWdyaWN1bHR1cmV8ZW58MXx8fHwxNzcwODY4NTcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     status: "healthy" as const,
     confidence: 92,
-    timestamp: "1 day ago",
+    timestamp: "Hace 1 día",
   },
 ];
 
@@ -84,14 +84,14 @@ export default function Dashboard() {
               </span>
             </h1>
             <p className="text-xs text-gray-500 font-mono tracking-[0.2em] uppercase">
-              Deep Neural Crop Surveillance
+              Vigilancia Neuronal de Cultivos
             </p>
           </div>
         </div>
         <div className="flex items-center gap-6">
           <div className="hidden md:block text-right">
-            <p className="text-[10px] text-gray-500 font-mono">NEURAL LINK</p>
-            <p className="text-xs text-emerald-600 dark:text-[#00ff9d] font-bold">ESTABLISHING...</p>
+            <p className="text-[10px] text-gray-500 font-mono">ENLACE NEURAL</p>
+            <p className="text-xs text-emerald-600 dark:text-[#00ff9d] font-bold">ESTABLECIENDO...</p>
           </div>
           <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors relative">
             <Zap className="w-6 h-6 text-[#FFA500]" />
@@ -109,13 +109,13 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
-                Total Scans
+                Escaneos Totales
               </p>
               <h3 className="text-4xl font-bold font-mono tracking-tighter">
                 1,284
               </h3>
               <p className="text-[10px] text-emerald-600 dark:text-[#00ff9d] mt-2 font-mono">
-                +12.4% INCREASE
+                +12.4% INCREMENTO
               </p>
             </div>
             <Scan className="w-6 h-6 text-blue-500" />
@@ -129,13 +129,13 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
-                Infection Rate
+                Tasa de Infección
               </p>
               <h3 className="text-4xl font-bold font-mono tracking-tighter text-[#ff003c]">
                 18.5%
               </h3>
               <p className="text-[10px] text-[#ff003c] mt-2 font-mono">
-                RISK: ELEVATED
+                RIESGO: ELEVADO
               </p>
             </div>
             <AlertTriangle className="w-6 h-6 text-[#ff003c]" />
@@ -149,13 +149,13 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
-                Active Nodes
+                Nodos Activos
               </p>
               <h3 className="text-4xl font-bold font-mono tracking-tighter text-emerald-600 dark:text-[#00ff9d]">
                 07
               </h3>
               <p className="text-[10px] text-gray-500 mt-2 font-mono">
-                STABLE CONNECTION
+                CONEXIÓN ESTABLE
               </p>
             </div>
             <Activity className="w-6 h-6 text-emerald-600 dark:text-[#00ff9d]" />
@@ -209,19 +209,19 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full animate-pulse dark:shadow-[0_0_10px_#00ff9d]"></div>
                   <p className="text-[11px] text-emerald-600 dark:text-[#00ff9d] font-mono tracking-[0.5em] uppercase font-black">
-                    BIOMETRIC NEURAL UPLOAD // AUTH_LEVEL: 3
+                    CARGA NEURAL BIOMÉTRICA // NIVEL_AUTH: 3
                   </p>
                 </div>
                 <h2 className="text-5xl font-black italic tracking-tight uppercase leading-none mb-2 group-hover:translate-x-2 transition-transform duration-500">
-                  INITIATE{" "}
+                  INICIAR{" "}
                   <span className="text-emerald-600 dark:text-[#00ff9d] dark:drop-shadow-[0_0_15px_rgba(0,255,157,0.4)]">
-                    NEURAL SCAN
+                    ESCANEO NEURAL
                   </span>
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight max-w-lg">
-                  Deploy vision transformer clusters (YOLOv11x) for
-                  molecular-level pathogen identification and crop vitality
-                  analysis.
+                  Desplegar clústeres de transformadores de visión (YOLOv8x) para
+                  identificación de patógenos a nivel molecular y análisis
+                  de vitalidad de cultivos.
                 </p>
               </div>
             </div>
@@ -237,10 +237,10 @@ export default function Dashboard() {
                   ))}
                 </div>
                 <p className="text-[10px] font-mono text-gray-500 dark:text-gray-600">
-                  SYSTEM STATUS
+                  ESTADO DEL SISTEMA
                 </p>
                 <div className="flex gap-2 font-black text-sm italic tracking-tighter">
-                  <span className="text-emerald-600 dark:text-[#00ff9d] dark:brightness-150">ACTIVE</span>
+                  <span className="text-emerald-600 dark:text-[#00ff9d] dark:brightness-150">ACTIVO</span>
                   <span className="text-gray-300 dark:text-gray-800">//</span>
                   <span className="text-gray-500 dark:text-gray-400">NOMINAL</span>
                 </div>
@@ -268,15 +268,15 @@ export default function Dashboard() {
           <div className="flex justify-between items-center mb-10">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">
-                Detection Analytics
+                Analíticas de Detección
               </h2>
               <p className="text-sm text-gray-500 font-mono">
-                TEMPORAL PEST DISTRIBUTION
+                DISTRIBUCIÓN TEMPORAL DE PLAGAS
               </p>
             </div>
             <select className="bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs px-4 py-2 rounded-lg font-mono outline-none text-gray-900 dark:text-white">
-              <option>LAST PREVIEW (7 DAYS)</option>
-              <option>30 DAYS ANALYSIS</option>
+              <option>ÚLTIMA VISTA (7 DÍAS)</option>
+              <option>ANÁLISIS 30 DÍAS</option>
             </select>
           </div>
 
@@ -346,13 +346,13 @@ export default function Dashboard() {
         <div className="lg:col-span-4 bg-white dark:bg-white/5 dark:backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-white/5 space-y-6 shadow-sm dark:shadow-none">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-black tracking-tighter uppercase italic">
-              Recent Intel
+              Inteligencia Reciente
             </h2>
             <Link
               href="/scan-history"
               className="text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
-              VIEW LOGS
+              VER REGISTROS
             </Link>
           </div>
 
@@ -376,7 +376,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs font-bold leading-tight uppercase tracking-tight">
-                    {scan.pest || "Healthy Sample"}
+                    {scan.pest || "Muestra Saludable"}
                   </p>
                   <p className="text-[10px] text-gray-500 font-mono mt-0.5">
                     {scan.timestamp}
@@ -397,10 +397,10 @@ export default function Dashboard() {
               <Cpu className="w-10 h-10 text-gray-400 dark:text-gray-500/50" />
               <div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-none mb-1">
-                  AI CORE ENGINE
+                  MOTOR IA CENTRAL
                 </p>
                 <p className="text-sm font-bold tracking-tight">
-                  NEURAL-SURVEILLANCE-V4
+                  VIGILANCIA-NEURAL-V4
                 </p>
               </div>
             </div>

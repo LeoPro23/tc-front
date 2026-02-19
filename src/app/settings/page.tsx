@@ -25,8 +25,8 @@ export default function SettingsPage() {
         <div className="p-8 max-w-4xl">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
-                <p className="text-gray-600 dark:text-gray-400">Manage your account and application preferences</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Configuración</h1>
+                <p className="text-gray-600 dark:text-gray-400">Administra tu cuenta y preferencias de la aplicación</p>
             </div>
 
             <div className="space-y-6">
@@ -34,22 +34,22 @@ export default function SettingsPage() {
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <User className="w-5 h-5 text-[#FF6347]" />
-                        Profile Settings
+                        Configuración de Perfil
                     </h2>
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Full Name
+                                Nombre Completo
                             </label>
                             <input
                                 type="text"
-                                defaultValue="John Farmer"
+                                defaultValue="Juan Agricultor"
                                 className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6347] focus:border-transparent text-gray-900 dark:text-white"
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Email Address
+                                Correo Electrónico
                             </label>
                             <input
                                 type="email"
@@ -59,11 +59,11 @@ export default function SettingsPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Farm Name
+                                Nombre de la Finca
                             </label>
                             <input
                                 type="text"
-                                defaultValue="Green Valley Tomato Farm"
+                                defaultValue="Finca de Tomates Valle Verde"
                                 className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6347] focus:border-transparent text-gray-900 dark:text-white"
                             />
                         </div>
@@ -74,14 +74,14 @@ export default function SettingsPage() {
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <Bell className="w-5 h-5 text-[#FF6347]" />
-                        Notifications
+                        Notificaciones
                     </h2>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-medium text-gray-900 dark:text-white">Email Notifications</p>
+                                <p className="font-medium text-gray-900 dark:text-white">Notificaciones por Correo</p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    Receive alerts about pest detections via email
+                                    Recibir alertas de detección de plagas por correo electrónico
                                 </p>
                             </div>
                             <button
@@ -97,9 +97,9 @@ export default function SettingsPage() {
                         </div>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-medium text-gray-900 dark:text-white">Push Notifications</p>
+                                <p className="font-medium text-gray-900 dark:text-white">Notificaciones Push</p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    Get instant alerts on your device
+                                    Recibir alertas instantáneas en tu dispositivo
                                 </p>
                             </div>
                             <button
@@ -115,9 +115,9 @@ export default function SettingsPage() {
                         </div>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-medium text-gray-900 dark:text-white">Weekly Reports</p>
+                                <p className="font-medium text-gray-900 dark:text-white">Reportes Semanales</p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    Receive summary reports every Monday
+                                    Recibir reportes resumen cada lunes
                                 </p>
                             </div>
                             <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -135,13 +135,13 @@ export default function SettingsPage() {
                         ) : (
                             <Sun className="w-5 h-5 text-[#FF6347]" />
                         )}
-                        Appearance
+                        Apariencia
                     </h2>
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="font-medium text-gray-900 dark:text-white">Dark Mode</p>
+                            <p className="font-medium text-gray-900 dark:text-white">Modo Oscuro</p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Toggle dark mode theme
+                                Alternar tema de modo oscuro
                             </p>
                         </div>
                         <button
@@ -161,22 +161,22 @@ export default function SettingsPage() {
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <Globe className="w-5 h-5 text-[#FF6347]" />
-                        Language & Region
+                        Idioma y Región
                     </h2>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Display Language
+                            Idioma de Visualización
                         </label>
                         <select
                             value={language}
                             onChange={(e) => setLanguage(e.target.value)}
                             className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6347] focus:border-transparent text-gray-900 dark:text-white"
                         >
-                            <option value="en">English</option>
+                            <option value="en">Inglés</option>
                             <option value="es">Español</option>
-                            <option value="fr">Français</option>
-                            <option value="de">Deutsch</option>
-                            <option value="zh">中文</option>
+                            <option value="fr">Francés</option>
+                            <option value="de">Alemán</option>
+                            <option value="zh">Chino</option>
                         </select>
                     </div>
                 </div>
@@ -185,17 +185,17 @@ export default function SettingsPage() {
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <Lock className="w-5 h-5 text-[#FF6347]" />
-                        Security
+                        Seguridad
                     </h2>
                     <div className="space-y-3">
                         <button className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left font-medium">
-                            Change Password
+                            Cambiar Contraseña
                         </button>
                         <button className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left font-medium">
-                            Two-Factor Authentication
+                            Autenticación de Dos Factores
                         </button>
                         <button className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left font-medium">
-                            Connected Devices
+                            Dispositivos Conectados
                         </button>
                     </div>
                 </div>
@@ -203,10 +203,10 @@ export default function SettingsPage() {
                 {/* Action Buttons */}
                 <div className="flex gap-4">
                     <button className="flex-1 bg-[#FF6347] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#ff4530] transition-colors">
-                        Save Changes
+                        Guardar Cambios
                     </button>
                     <button className="px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
-                        Cancel
+                        Cancelar
                     </button>
                 </div>
             </div>

@@ -9,10 +9,10 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     const navItems = [
-        { href: "/", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/scan-history", label: "Scan History", icon: History },
-        { href: "/analysis", label: "Analysis", icon: FileText },
-        { href: "/settings", label: "Settings", icon: Settings },
+        { href: "/", label: "Panel", icon: LayoutDashboard },
+        { href: "/scan-history", label: "Historial", icon: History },
+        { href: "/analysis", label: "Análisis", icon: FileText },
+        { href: "/settings", label: "Configuración", icon: Settings },
     ];
 
     return (
@@ -27,7 +27,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                         </div>
                         <div>
                             <h1 className="font-bold text-xl text-gray-900 dark:text-white">TomatoCode</h1>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">AgriTech AI Platform</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Plataforma IA Agrícola</p>
                         </div>
                     </div>
                 </div>
@@ -80,8 +80,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                     <div className="flex items-center gap-3 px-4 py-3">
                         <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full" />
                         <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">John Farmer</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Farm Admin</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Juan Agricultor</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Admin de Finca</p>
                         </div>
                     </div>
                 </div>

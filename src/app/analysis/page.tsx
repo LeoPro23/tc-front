@@ -48,7 +48,7 @@ const RECIPES: Record<string, AgronomicRecipe> = {
     dose: "0.75 - 1.0 L/ha",
     method: "Eliminación de brotes dañados y aplicación dirigida",
   },
-  Healthy: {
+  Saludable: {
     product: "N/A",
     dose: "N/A",
     method: "Mantener ciclos de riego y fertilización estándar",
@@ -87,11 +87,11 @@ export default function AnalysisPage() {
     setDetections([]);
     setError(null);
 
-    addLog("[SISTEMA] ACCEDIENDO AL NÚCLEO NEURONAL TOMATOCODE...");
+    addLog("[SISTEMA] ACCEDIENDO AL NÚCLEO NEURAL CROPINTEL...");
     await new Promise((r) => setTimeout(r, 600));
-    addLog("[BUFFER] AISLANDO LECHOS DE BIOMASA...");
+    addLog("[BUFFER] AISLANDO CAMAS DE BIOMASA...");
     await new Promise((r) => setTimeout(r, 400));
-    addLog("[IA] EJECUTANDO VIGILANCIA YOLOv11x-AGRI...");
+    addLog("[ML] EJECUTANDO VIGILANCIA YOLOv8x-AGRI...");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -102,11 +102,11 @@ export default function AnalysisPage() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Fallo en el análisis del backend");
+      if (!response.ok) throw new Error("Falló el análisis del backend");
 
       const data = await response.json();
 
-      addLog("[BASE DE DATOS] BUSCANDO ADN PATÓGENO...");
+      addLog("[BD] EMPAREJANDO ADN DEL PATÓGENO...");
       await new Promise((r) => setTimeout(r, 800));
 
       if (data.detections && data.detections.length > 0) {
@@ -126,14 +126,14 @@ export default function AnalysisPage() {
         addLog(`[RESULTADO] ${data.detections.length} OBJETIVOS IDENTIFICADOS.`);
       } else {
         setDetections([]);
-        addLog("[RESULTADO] ESTADO DEL ESPÉCIMEN: SALUDABLE.");
+        addLog("[RESULTADO] ESTADO ESPÉCIMEN: SALUDABLE.");
       }
       addLog("[PROTOCOLO] RECETA AGRÍCOLA AISLADA.");
       await new Promise((r) => setTimeout(r, 400));
     } catch (err) {
-      console.error("Error de Análisis:", err);
-      setError("Error conectando al enlace neuronal. Asegura que el backend esté activo.");
-      addLog("[ERROR] ENLACE NEURONAL DESCONECTADO.");
+      console.error("Analysis Error:", err);
+      setError("Error conectando al enlace neural. Asegúrese que el backend esté activo.");
+      addLog("[ERROR] ENLACE NEURAL DESCONECTADO.");
     } finally {
       setIsScanning(false);
     }
@@ -145,7 +145,7 @@ export default function AnalysisPage() {
     const key = Object.keys(RECIPES).find(
       (k) => k.toLowerCase() === pest.toLowerCase(),
     );
-    return key ? RECIPES[key] : RECIPES["Healthy"];
+    return key ? RECIPES[key] : RECIPES["Saludable"];
   };
 
   const recipe = primaryDetection ? getRecipe(primaryDetection.pest) : null;
@@ -167,12 +167,15 @@ export default function AnalysisPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tighter uppercase italic">
-                TOMATO<span className="text-emerald-600 dark:text-[#00ff9d]">CODE</span>
+                CROP<span className="text-emerald-600 dark:text-[#00ff9d]">INTEL</span>{" "}
+                <span className="text-gray-400 dark:text-gray-500 not-italic font-normal">
+                  v4.0
+                </span>
               </h1>
               <div className="flex items-center gap-2">
                 <Leaf className="w-3 h-3 text-emerald-500/50 dark:text-[#00ff9d]/50" />
                 <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-mono">
-                  Diagnóstico Neuronal de Patógenos
+                  Diagnóstico Neural de Patógenos
                 </p>
               </div>
             </div>
@@ -183,7 +186,7 @@ export default function AnalysisPage() {
             <div className="flex items-center gap-2 justify-end">
               <span className="w-1.5 h-1.5 bg-emerald-500 dark:bg-[#00ff9d] rounded-full animate-pulse dark:shadow-[0_0_5px_#00ff9d]"></span>
               <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
-                NÚCLEO-IA LISTO
+                NÚCLEO-ML LISTO
               </p>
             </div>
             <p className="text-[9px] text-gray-400 dark:text-gray-600 font-mono">LATENCIA: 42ms</p>
@@ -211,10 +214,11 @@ export default function AnalysisPage() {
                     </div>
                   </div>
                   <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-2">
-                    Inicializar Escaneo de Muestra
+                    Inicializar Escaneo
                   </h2>
                   <p className="text-gray-500 max-w-sm mb-8 text-sm font-medium">
-                    Sube imágenes hiperespectrales de hojas para procesamiento neuronal profundo e identificación de patógenos.
+                    Suba imágenes hiperespectrales de hojas para procesamiento
+                    neural profundo e identificación de patógenos.
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="h-[1px] w-8 bg-gray-200 dark:bg-white/10"></div>
@@ -233,7 +237,7 @@ export default function AnalysisPage() {
                   <div className="relative w-full h-full">
                     <NextImage
                       src={selectedImage}
-                      alt="Sample"
+                      alt="Muestra"
                       fill
                       className={`object-contain transition-all duration-700 ${isScanning ? "brightness-75 contrast-125 saturate-[1.2] hue-rotate-[90deg]" : "brightness-100"}`}
                       unoptimized={selectedImage.startsWith("blob:")}
@@ -305,7 +309,7 @@ export default function AnalysisPage() {
                           <div className="flex flex-col items-center z-10">
                             <Dna className="w-12 h-12 text-[#00ff9d] animate-pulse mb-3" />
                             <span className="text-[10px] font-mono text-[#00ff9d] font-black tracking-[0.4em] animate-pulse">
-                              ESCANEAANDO...
+                              ESCANEANDO...
                             </span>
                           </div>
                         </div>
@@ -320,7 +324,7 @@ export default function AnalysisPage() {
                           className="absolute left-0 w-full h-[2px] bg-[#00ff9d] shadow-[0_0_25px_5px_#00ff9d] z-50"
                         >
                           <div className="absolute top-0 right-4 transform -translate-y-full text-[8px] font-mono text-[#00ff9d] animate-pulse">
-                            ESCANEAANDO_ADN_SUPERFICIAL...
+                            ESCANEANDO_ADN_SUPERFICIAL...
                           </div>
                         </motion.div>
 
@@ -341,7 +345,7 @@ export default function AnalysisPage() {
                               <div className="flex items-center gap-2">
                                 <div className="w-2.5 h-2.5 bg-[#00ff9d] rounded-full animate-ping"></div>
                                 <span className="font-black italic">
-                                  ML-AGRI NEURAL CORE // v4.0.2
+                                  NÚCLEO NEURAL ML-AGRI // v4.0.2
                                 </span>
                               </div>
                               <div className="flex gap-1">
@@ -428,7 +432,7 @@ export default function AnalysisPage() {
                           BIOMASA SALUDABLE
                         </h2>
                         <p className="text-emerald-600 dark:text-[#00ff9d] text-[10px] font-mono tracking-widest font-black">
-                          NO SE HALLARON FIRMAS PATÓGENAS
+                          SIN FIRMAS DE PATÓGENOS
                         </p>
                       </div>
                     </motion.div>
@@ -464,7 +468,7 @@ export default function AnalysisPage() {
                         }
                         className="px-6 py-3 bg-emerald-100 dark:bg-[#00ff9d]/20 dark:backdrop-blur-xl rounded-xl border border-emerald-400 dark:border-[#00ff9d]/30 text-emerald-700 dark:text-[#00ff9d] text-xs font-black italic tracking-widest flex items-center gap-3 pointer-events-auto hover:bg-emerald-200 dark:hover:bg-[#00ff9d]/30 transition-all shadow-sm dark:shadow-[0_0_20px_rgba(0,255,157,0.1)]"
                       >
-                        <Search className="w-4 h-4" /> RE-PROCESAR ENLACE NEURONAL
+                        <Search className="w-4 h-4" /> RE-PROCESAR ENLACE NEURAL
                       </button>
                     )}
                   </div>
@@ -494,7 +498,7 @@ export default function AnalysisPage() {
                       Metadatos de Predicción
                     </h3>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
-                      MODELO: YOLOv11x-AGRI
+                      MODELO: YOLOv8x
                     </p>
                   </div>
                 </div>
@@ -513,7 +517,7 @@ export default function AnalysisPage() {
                       Lectura Bio-Térmica
                     </span>
                     <span className="font-bold">
-                      {Math.floor(Math.random() * (98 - 95 + 1) + 95)}.6°F // ESTABLE
+                      36.9°C // ESTABLE
                     </span>
                   </div>
                 </div>
@@ -536,8 +540,8 @@ export default function AnalysisPage() {
               </div>
               <p className="text-[11px] text-gray-500 leading-relaxed italic">
                 {primaryDetection
-                  ? "Las firmas neuronales indican colonización activa de patógenos. Se requieren secuencias de mitigación inmediata para preservar la integridad de la biomasa."
-                  : "Escaneo completo. No se identificaron variantes fenotípicas patógenas en el búfer de muestra actual."}
+                  ? "Las firmas neurales indican colonización activa de patógenos. Se requieren secuencias de mitigación inmediata para preservar la integridad de la biomasa."
+                  : "Escaneo completo. No se identificaron variantes fenotípicas patogénicas en el buffer de muestra actual."}
               </p>
             </div>
           </div>
@@ -545,10 +549,10 @@ export default function AnalysisPage() {
 
         {/* Sidebar - Agronomic Recipe */}
         <aside className="lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-white dark:bg-gradient-to-b dark:from-black/40 dark:to-transparent dark:backdrop-blur-xl p-8 rounded-[2rem] border border-gray-200 dark:border-white/5 flex flex-col h-full shadow-sm dark:shadow-none">
+          <div className="bg-white dark:bg-[#111] dark:backdrop-blur-xl p-8 rounded-[2rem] border border-gray-200 dark:border-white/5 flex flex-col h-full shadow-sm dark:shadow-none">
             <h2 className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
               <span className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full"></span>{" "}
-              REGISTRO DE RECETAS AGRÍCOLAS
+              REGISTRO AGRI-RECETA
             </h2>
 
             <AnimatePresence mode="wait">
@@ -577,7 +581,7 @@ export default function AnalysisPage() {
                       Patógeno Objetivo
                     </p>
                     <div className="flex items-center gap-4">
-                      <h3 className="text-4xl font-black italic tracking-tighter uppercase dark:drop-shadow-[0_0_20px_#ff003c44]">
+                      <h3 className="text-4xl font-black italic tracking-tighter uppercase text-gray-900 dark:text-white dark:drop-shadow-[0_0_20px_#ff003c44]">
                         {primaryDetection?.pest}
                       </h3>
                       <div className="px-3 py-1 bg-[#ff003c] text-white text-[10px] font-black rounded border-2 border-red-300 dark:border-white/10 shadow-lg dark:shadow-[0_0_15px_#ff003c]">
@@ -600,11 +604,11 @@ export default function AnalysisPage() {
                           <div className="p-3 bg-orange-50 dark:bg-[#FFA500]/10 rounded-2xl">
                             <Zap className="w-5 h-5 text-[#FFA500]" />
                           </div>
-                          <p className="text-[11px] font-mono text-gray-500 uppercase tracking-widest">
+                          <p className="text-[11px] font-mono text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                             Producto Recomendado
                           </p>
                         </div>
-                        <p className="text-xl font-black leading-tight italic">
+                        <p className="text-xl font-black leading-tight italic text-gray-900 dark:text-white">
                           {recipe.product}
                         </p>
                       </div>
@@ -623,11 +627,11 @@ export default function AnalysisPage() {
                           <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-2xl">
                             <TrendingUp className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                           </div>
-                          <p className="text-[11px] font-mono text-gray-500 uppercase tracking-widest">
+                          <p className="text-[11px] font-mono text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                             Dosis de Aplicación
                           </p>
                         </div>
-                        <p className="text-xl font-black leading-tight italic">
+                        <p className="text-xl font-black leading-tight italic text-gray-900 dark:text-white">
                           {recipe.dose}
                         </p>
                       </div>
@@ -665,7 +669,7 @@ export default function AnalysisPage() {
                     className="pt-8 border-t border-gray-200 dark:border-white/5"
                   >
                     <button className="group w-full py-5 bg-gray-100 dark:bg-white/5 border-2 border-gray-200 dark:border-white/10 rounded-3xl text-[11px] font-mono text-gray-500 uppercase tracking-[0.3em] hover:bg-emerald-50 dark:hover:bg-[#00ff9d]/10 hover:border-emerald-400 dark:hover:border-[#00ff9d]/50 hover:text-gray-900 dark:hover:text-white transition-all duration-300 flex items-center justify-center gap-4">
-                      <span>Generar Informe PDF</span>
+                      <span>Generar Reporte PDF</span>
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </motion.div>
@@ -674,7 +678,7 @@ export default function AnalysisPage() {
                 <div className="flex-1 flex flex-col items-center justify-center text-center opacity-30 grayscale saturate-0">
                   <Cpu className="w-16 h-16 text-gray-400 dark:text-gray-600 mb-6" />
                   <p className="text-[10px] font-mono uppercase tracking-[0.2em]">
-                    Esperando Búfer de Datos...
+                    Esperando Buffer de Datos...
                   </p>
                 </div>
               )}

@@ -10,9 +10,9 @@ const allScans = [
     image:
       "https://images.unsplash.com/photo-1762608292626-a384d1cc401f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBsZWFmJTIwZGlzZWFzZSUyMGNsb3NldXB8ZW58MXx8fHwxNzcwODY4NTcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     status: "infected" as const,
-    pest: "Whitefly Infestation",
+    pest: "Infestación de Mosca Blanca",
     confidence: 98,
-    timestamp: "2 hours ago",
+    timestamp: "Hace 2 horas",
   },
   {
     id: "2",
@@ -20,7 +20,7 @@ const allScans = [
       "https://images.unsplash.com/photo-1768113802430-dcb7c874407f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwdG9tYXRvJTIwcGxhbnQlMjBsZWFmfGVufDF8fHx8MTc3MDg2ODU3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
     status: "healthy" as const,
     confidence: 95,
-    timestamp: "5 hours ago",
+    timestamp: "Hace 5 horas",
   },
   {
     id: "3",
@@ -28,16 +28,16 @@ const allScans = [
       "https://images.unsplash.com/photo-1720487222334-f91d9d74c852?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBncmVlbmhvdXNlJTIwYWdyaWN1bHR1cmV8ZW58MXx8fHwxNzcwODY4NTcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     status: "healthy" as const,
     confidence: 92,
-    timestamp: "1 day ago",
+    timestamp: "Hace 1 día",
   },
   {
     id: "4",
     image:
       "https://images.unsplash.com/photo-1762608292626-a384d1cc401f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBsZWFmJTIwZGlzZWFzZSUyMGNsb3NldXB8ZW58MXx8fHwxNzcwODY4NTcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     status: "infected" as const,
-    pest: "Spider Mites",
+    pest: "Ácaros Araña",
     confidence: 87,
-    timestamp: "2 days ago",
+    timestamp: "Hace 2 días",
   },
   {
     id: "5",
@@ -45,16 +45,16 @@ const allScans = [
       "https://images.unsplash.com/photo-1768113802430-dcb7c874407f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwdG9tYXRvJTIwcGxhbnQlMjBsZWFmfGVufDF8fHx8MTc3MDg2ODU3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
     status: "healthy" as const,
     confidence: 96,
-    timestamp: "3 days ago",
+    timestamp: "Hace 3 días",
   },
   {
     id: "6",
     image:
       "https://images.unsplash.com/photo-1762608292626-a384d1cc401f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBsZWFmJTIwZGlzZWFzZSUyMGNsb3NldXB8ZW58MXx8fHwxNzcwODY4NTcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     status: "infected" as const,
-    pest: "Aphids",
+    pest: "Áfidos",
     confidence: 91,
-    timestamp: "4 days ago",
+    timestamp: "Hace 4 días",
   },
   {
     id: "7",
@@ -62,16 +62,16 @@ const allScans = [
       "https://images.unsplash.com/photo-1768113802430-dcb7c874407f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwdG9tYXRvJTIwcGxhbnQlMjBsZWFmfGVufDF8fHx8MTc3MDg2ODU3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
     status: "healthy" as const,
     confidence: 94,
-    timestamp: "5 days ago",
+    timestamp: "Hace 5 días",
   },
   {
     id: "8",
     image:
       "https://images.unsplash.com/photo-1762608292626-a384d1cc401f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBsZWFmJTIwZGlzZWFzZSUyMGNsb3NldXB8ZW58MXx8fHwxNzcwODY4NTcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     status: "infected" as const,
-    pest: "Early Blight",
+    pest: "Tizón Temprano",
     confidence: 89,
-    timestamp: "1 week ago",
+    timestamp: "Hace 1 semana",
   },
 ];
 
@@ -96,16 +96,16 @@ export default function ScanHistoryPage() {
       <div className="mb-12 max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter uppercase mb-2">
-            SCAN<span className="text-emerald-600 dark:text-[#00ff9d]">ARCHIVE</span>
+            ESCANEO<span className="text-emerald-600 dark:text-[#00ff9d]">ARCHIVO</span>
           </h1>
           <p className="text-[10px] text-gray-500 font-mono tracking-[0.2em] uppercase">
-            Historical Pathogen Database // Secured
+            Base de Datos Histórica de Patógenos // Asegurada
           </p>
         </div>
         <div className="flex items-center gap-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-4 dark:backdrop-blur-xl shadow-sm dark:shadow-none">
           <div className="text-right">
             <p className="text-[9px] text-gray-500 font-mono uppercase">
-              Total Records
+              Registros Totales
             </p>
             <p className="text-xl font-black italic text-emerald-600 dark:text-[#00ff9d] leading-none">
               {allScans.length}
@@ -114,7 +114,7 @@ export default function ScanHistoryPage() {
           <div className="w-[1px] h-8 bg-gray-200 dark:bg-white/10"></div>
           <div className="text-right">
             <p className="text-[9px] text-gray-500 font-mono uppercase">
-              Filtered
+              Filtrados
             </p>
             <p className="text-xl font-black italic leading-none">
               {filteredScans.length}
@@ -130,7 +130,7 @@ export default function ScanHistoryPage() {
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 group-focus-within:text-emerald-600 dark:group-focus-within:text-[#00ff9d] transition-colors" />
           <input
             type="text"
-            placeholder="SEARCH RECORDS..."
+            placeholder="BUSCAR REGISTROS..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:focus:ring-[#00ff9d]/50 focus:bg-white dark:focus:bg-white/10 transition-all font-mono text-xs uppercase tracking-widest placeholder:text-gray-400 dark:placeholder:text-gray-700 text-gray-900 dark:text-white shadow-sm dark:shadow-none"
@@ -140,9 +140,9 @@ export default function ScanHistoryPage() {
         {/* Filter Buttons */}
         <div className="flex gap-2 p-1.5 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/5 h-fit shadow-sm dark:shadow-none">
           {[
-            { id: "all", label: "ALL UNITS", color: "text-gray-900 dark:text-white" },
-            { id: "healthy", label: "HEALTHY", color: "text-emerald-600 dark:text-[#00ff9d]" },
-            { id: "infected", label: "INFECTED", color: "text-[#ff003c]" },
+            { id: "all", label: "TODOS", color: "text-gray-900 dark:text-white" },
+            { id: "healthy", label: "SALUDABLE", color: "text-emerald-600 dark:text-[#00ff9d]" },
+            { id: "infected", label: "INFECTADO", color: "text-[#ff003c]" },
           ].map((btn) => (
             <button
               key={btn.id}
@@ -150,8 +150,8 @@ export default function ScanHistoryPage() {
                 setFilter(btn.id as "all" | "healthy" | "infected")
               }
               className={`px-6 py-2.5 rounded-xl font-black italic text-[10px] tracking-[0.1em] transition-all ${filter === btn.id
-                  ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] border border-gray-200 dark:border-white/10"
-                  : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] border border-gray-200 dark:border-white/10"
+                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                 } ${filter === btn.id ? btn.color : ""}`}
             >
               {btn.label}
@@ -162,7 +162,7 @@ export default function ScanHistoryPage() {
         {/* Range Filter */}
         <button className="px-6 py-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-[10px] font-black italic tracking-widest text-emerald-600 dark:text-[#00ff9d] rounded-2xl hover:bg-emerald-50 dark:hover:bg-[#00ff9d]/10 transition-all flex items-center gap-3 shadow-sm dark:shadow-none">
           <Calendar className="w-4 h-4" />
-          TIME RANGE // SELECT
+          RANGO TEMPORAL // SELECCIONAR
         </button>
       </div>
 
@@ -191,7 +191,7 @@ export default function ScanHistoryPage() {
               <Search className="w-8 h-8 text-gray-400 dark:text-gray-700" />
             </div>
             <p className="text-gray-500 dark:text-gray-600 font-mono text-xs uppercase tracking-[0.3em]">
-              No data matching parameters found.
+              No se encontraron datos con los parámetros indicados.
             </p>
           </motion.div>
         )}
