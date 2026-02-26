@@ -56,6 +56,44 @@ export async function toggle2Fa(isEnabled: boolean) {
     return true;
 }
 
+export async function generate2FaSecret() {
+    const token = getToken();
+    const res = await fetch(`${URL_BACKEND}/auth/2fa/generate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Error al generar secreto 2FA');
+    return res.json();
+}
+
+export async function revokeDevice(sessionId: string) {
+    const token = getToken();
+    const res = await fetch(`${URL_BACKEND}/auth/devices/${sessionId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Error al eliminar sesión');
+    return res.json();
+}
+
+export async function verify2Fa(otpCode: string) {
+    const token = getToken();
+    const res = await fetch(`${URL_BACKEND}/auth/2fa/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ otpCode })
+    });
+
+    if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(body.message ?? 'Código incorrecto o ha expirado');
+    }
+    return true;
+}
+
 export async function getConnectedDevices() {
     const token = getToken();
     const res = await fetch(`${URL_BACKEND}/auth/devices`, {

@@ -1,10 +1,11 @@
 "use client";
 
-import { Bell, User, Lock, Globe, Mail, Moon, Sun, Loader2, Save } from "lucide-react";
+import { Bell, User, Lock, Globe, Mail, Moon, Sun, Loader2, Save, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { getUser, saveUser } from "@/lib/auth-helpers";
-import { getProfile, updateProfile, changePassword, toggle2Fa, getConnectedDevices } from "@/data/profile";
+import { getUser, saveUser, getToken } from "@/lib/auth-helpers";
+import { getProfile, updateProfile, changePassword, toggle2Fa, getConnectedDevices, generate2FaSecret, verify2Fa, revokeDevice } from "@/data/profile";
+import toast from "react-hot-toast";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
@@ -34,6 +35,13 @@ export default function SettingsPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [passwordError, setPasswordError] = useState("");
+
+    // 2FA Flow State
+    const [show2FaModal, setShow2FaModal] = useState(false);
+    const [qrCodeUrl, setQrCodeUrl] = useState("");
+    const [otpCode, setOtpCode] = useState("");
+    const [isVerifying2Fa, setIsVerifying2Fa] = useState(false);
+    const [twoFaError, setTwoFaError] = useState("");
 
     useEffect(() => {
         setMounted(true);
@@ -81,24 +89,72 @@ export default function SettingsPage() {
             if (localUser) {
                 saveUser({ ...localUser, ...updated });
             }
-            alert("Perfil actualizado correctamente");
+            toast.success("Perfil actualizado correctamente");
         } catch (error: any) {
-            alert(error.message || "Error al actualizar perfil");
+            toast.error(error.message || "Error al actualizar perfil");
         } finally {
             setIsSavingProfile(false);
         }
     };
 
     const handleToggle2Fa = async () => {
-        setIsSaving2Fa(true);
+        if (is2FaEnabled) {
+            // Disable 2FA
+            setIsSaving2Fa(true);
+            try {
+                await toggle2Fa(false);
+                setIs2FaEnabled(false);
+                toast.success("2FA desactivado correctamente");
+            } catch (error: any) {
+                toast.error(error.message || "Error al desactivar 2FA");
+            } finally {
+                setIsSaving2Fa(false);
+            }
+        } else {
+            // Enable 2FA flow
+            setIsSaving2Fa(true);
+            setTwoFaError("");
+            setOtpCode("");
+            try {
+                const data = await generate2FaSecret();
+                setQrCodeUrl(data.qrCode);
+                setShow2FaModal(true);
+            } catch (error: any) {
+                toast.error(error.message || "Error al inicializar 2FA");
+            } finally {
+                setIsSaving2Fa(false);
+            }
+        }
+    };
+
+    const handleVerify2Fa = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setTwoFaError("");
+        if (otpCode.length !== 6) {
+            setTwoFaError("El código debe tener 6 dígitos");
+            return;
+        }
+
+        setIsVerifying2Fa(true);
         try {
-            const newState = !is2FaEnabled;
-            await toggle2Fa(newState);
-            setIs2FaEnabled(newState);
+            await verify2Fa(otpCode);
+            setIs2FaEnabled(true);
+            setShow2FaModal(false);
+            toast.success("2FA activado correctamente");
         } catch (error: any) {
-            alert(error.message || "Error al cambiar 2FA");
+            setTwoFaError(error.message || "Error al verificar código");
         } finally {
-            setIsSaving2Fa(false);
+            setIsVerifying2Fa(false);
+        }
+    };
+
+    const handleRevokeDevice = async (sessionId: string) => {
+        try {
+            await revokeDevice(sessionId);
+            setDevices(prev => prev.filter(d => d.userSessionId !== sessionId));
+            toast.success("Sesión cerrada exitosamente");
+        } catch (error: any) {
+            toast.error(error.message || "Error al eliminar dispositivo");
         }
     };
 
@@ -113,7 +169,7 @@ export default function SettingsPage() {
         setIsChangingPassword(true);
         try {
             await changePassword(currentPassword, newPassword);
-            alert("Contraseña actualizada correctamente");
+            toast.success("Contraseña actualizada correctamente");
             setShowPasswordModal(false);
             setCurrentPassword("");
             setNewPassword("");
@@ -246,9 +302,24 @@ export default function SettingsPage() {
                                 <ul className="space-y-3">
                                     {devices.map((d: any) => (
                                         <li key={d.userSessionId} className="text-sm flex flex-col gap-1 text-slate-600 dark:text-slate-300 bg-white dark:bg-[#1a1a1a] p-3 rounded-md border border-slate-100 dark:border-white/5 shadow-sm">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
-                                                <strong className="text-slate-900 dark:text-white truncate">{d.userAgent || 'Dispositivo Desconocido'}</strong>
+                                            <div className="flex justify-between items-start gap-2">
+                                                <div className="flex items-center gap-2 max-w-[80%]">
+                                                    <span className={`w-2 h-2 rounded-full min-w-[8px] ${d.token === getToken() ? "bg-[#00ff9d] shadow-[0_0_8px_rgba(0,255,157,0.6)]" : "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"}`}></span>
+                                                    <strong className="text-slate-900 dark:text-white truncate">{d.userAgent || 'Dispositivo Desconocido'}</strong>
+                                                </div>
+                                                {d.token === getToken() ? (
+                                                    <span className="text-[10px] bg-emerald-100 dark:bg-[#00ff9d]/20 text-emerald-800 dark:text-[#00ff9d] px-2 py-1 rounded-md font-bold whitespace-nowrap">
+                                                        Actual
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleRevokeDevice(d.userSessionId)}
+                                                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors whitespace-nowrap"
+                                                        title="Eliminar sesión"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                             <div className="text-xs text-slate-500 flex justify-between ml-4">
                                                 <span>IP: {d.ipAddress || 'Oculta'}</span>
@@ -357,6 +428,68 @@ export default function SettingsPage() {
                                     className="flex-1 px-4 py-2 bg-emerald-600 dark:bg-[#00ff9d] text-white dark:text-black rounded-lg text-sm font-bold flex justify-center items-center gap-2 hover:brightness-110 disabled:opacity-50"
                                 >
                                     {isChangingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : "Actualizar"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Setup 2FA Modal */}
+            {show2FaModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-[#0d0d0d] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl relative">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Configurar 2FA</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                            Escanea este código QR con tu aplicación de autenticación (Google Authenticator, Authy, etc.).
+                        </p>
+
+                        {twoFaError && (
+                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs rounded-lg">
+                                {twoFaError}
+                            </div>
+                        )}
+
+                        {qrCodeUrl ? (
+                            <div className="flex justify-center mb-6 bg-white p-2 rounded-lg border border-slate-200">
+                                <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48" />
+                            </div>
+                        ) : (
+                            <div className="flex justify-center mb-6">
+                                <Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-[#00ff9d]" />
+                            </div>
+                        )}
+
+                        <form onSubmit={handleVerify2Fa} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    Código de Verificación (6 dígitos)
+                                </label>
+                                <input
+                                    type="text"
+                                    maxLength={6}
+                                    required
+                                    value={otpCode}
+                                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center tracking-widest text-lg font-mono text-slate-900 dark:text-white"
+                                    placeholder="000000"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
+                                <button
+                                    type="button"
+                                    onClick={() => setShow2FaModal(false)}
+                                    className="flex-1 px-4 py-2 bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white rounded-lg text-sm font-medium hover:bg-slate-300 dark:hover:bg-white/20"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isVerifying2Fa || otpCode.length !== 6}
+                                    className="flex-1 px-4 py-2 bg-emerald-600 dark:bg-[#00ff9d] text-white dark:text-black rounded-lg text-sm font-bold flex justify-center items-center gap-2 hover:brightness-110 disabled:opacity-50"
+                                >
+                                    {isVerifying2Fa ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verificar"}
                                 </button>
                             </div>
                         </form>

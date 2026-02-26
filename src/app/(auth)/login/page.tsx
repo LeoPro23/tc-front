@@ -16,6 +16,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 2FA variables
+  const [step, setStep] = useState<"CREDENTIALS" | "2FA">("CREDENTIALS");
+  const [otpCode, setOtpCode] = useState("");
+
   useEffect(() => {
     if (isAuthenticated()) router.replace("/");
   }, [router]);
@@ -24,13 +28,26 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
-      const res = await loginUser({ email, password });
-      saveToken(res.accessToken);
-      saveUser(res.user);
-      router.push("/");
+      if (step === "CREDENTIALS") {
+        const res = await loginUser({ email, password });
+        saveToken(res.accessToken);
+        saveUser(res.user);
+        router.push("/");
+      } else {
+        const res = await loginUser({ email, password, otpCode });
+        saveToken(res.accessToken);
+        saveUser(res.user);
+        router.push("/");
+      }
     } catch (err) {
-      setError((err as Error).message);
+      if ((err as Error).message === "2FA_REQUIRED") {
+        setStep("2FA");
+        setError(null);
+      } else {
+        setError((err as Error).message);
+      }
     } finally {
       setLoading(false);
     }
@@ -134,51 +151,82 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div className="group">
-              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
-                Identificador Neural (Email)
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="usuario@tomatocode.ai"
-                  className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm font-mono px-4 py-3 rounded-xl outline-none placeholder:text-slate-400 dark:text-gray-700 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#00ff9d]/0 group-focus-within:bg-emerald-500 dark:group-focus-within:bg-[#00ff9d] transition-colors shadow-[0_0_8px_rgba(16,185,129,0.4)] dark:shadow-[0_0_8px_rgba(0,255,157,0.6)]" />
-              </div>
-            </div>
+            {step === "CREDENTIALS" ? (
+              <>
+                {/* Email */}
+                <div className="group">
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
+                    Identificador Neural (Email)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="usuario@tomatocode.ai"
+                      className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm font-mono px-4 py-3 rounded-xl outline-none placeholder:text-slate-400 dark:text-gray-700 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#00ff9d]/0 group-focus-within:bg-emerald-500 dark:group-focus-within:bg-[#00ff9d] transition-colors shadow-[0_0_8px_rgba(16,185,129,0.4)] dark:shadow-[0_0_8px_rgba(0,255,157,0.6)]" />
+                  </div>
+                </div>
 
-            {/* Password */}
-            <div className="group">
-              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
-                Clave de Acceso
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••••••"
-                  className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm font-mono px-4 py-3 pr-12 rounded-xl outline-none placeholder:text-slate-500 dark:text-gray-600 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-600 hover:text-emerald-600 dark:text-[#00ff9d] transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
+                {/* Password */}
+                <div className="group">
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
+                    Clave de Acceso
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="••••••••••••"
+                      className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm font-mono px-4 py-3 pr-12 rounded-xl outline-none placeholder:text-slate-500 dark:text-gray-600 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-600 hover:text-emerald-600 dark:text-[#00ff9d] transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                key="2fa-step"
+                className="group"
+              >
+                <div className="text-center mb-6">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Tu cuenta está protegida. Ingresa el código de 6 dígitos de tu aplicación de autenticador.
+                  </p>
+                </div>
+                <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
+                  Código de Autenticación 2FA
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    required
+                    placeholder="000000"
+                    className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-center tracking-widest text-lg font-mono px-4 py-3 rounded-xl outline-none placeholder:text-slate-400 dark:text-gray-700 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
+                  />
+                </div>
+              </motion.div>
+            )}
 
             {/* Error */}
             <AnimatePresence>
@@ -213,7 +261,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     <span className="relative">
-                      INICIAR SESIÓN NEURAL
+                      {step === "CREDENTIALS" ? "INICIAR SESIÓN NEURAL" : "VERIFICAR CÓDIGO"}
                       {/* scan shimmer */}
                       <motion.span
                         animate={{ left: ["-100%", "200%"] }}

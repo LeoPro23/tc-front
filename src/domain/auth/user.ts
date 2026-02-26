@@ -14,6 +14,7 @@ export interface AuthResponse {
 export interface LoginDto {
   email: string;
   password: string;
+  otpCode?: string;
 }
 
 export interface RegisterDto {
