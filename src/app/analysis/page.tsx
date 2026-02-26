@@ -27,6 +27,14 @@ interface Detection {
   model: string;
 }
 
+interface ImageAnalysisEntry {
+  id: string;
+  file: File;
+  previewUrl: string;
+  detections: Detection[];
+  models: string[];
+}
+
 interface AgronomicRecipe {
   product: string;
   dose: string;
@@ -59,16 +67,19 @@ const RECIPES: Record<string, AgronomicRecipe> = {
 export default function AnalysisPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanLogs, setScanLogs] = useState<string[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [detections, setDetections] = useState<Detection[]>([]);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [imageEntries, setImageEntries] = useState<ImageAnalysisEntry[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imageEntriesRef = useRef<ImageAnalysisEntry[]>([]);
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [imgRect, setImgRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const selectedEntry = imageEntries[selectedImageIndex] ?? null;
+  const selectedImage = selectedEntry?.previewUrl ?? null;
+  const detections = selectedEntry?.detections ?? [];
+  const availableModels = selectedEntry?.models ?? [];
 
   // Compute the rendered image rect inside object-contain container
   const computeImgRect = useCallback(() => {
@@ -108,28 +119,77 @@ export default function AnalysisPage() {
     return () => ro.disconnect();
   }, [computeImgRect]);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-        performRealAnalysis(file);
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    if (selectedImageIndex >= imageEntries.length && imageEntries.length > 0) {
+      setSelectedImageIndex(0);
     }
+  }, [imageEntries.length, selectedImageIndex]);
+
+  useEffect(() => {
+    setSelectedModels([]);
+  }, [selectedImageIndex]);
+
+  useEffect(() => {
+    imageEntriesRef.current = imageEntries;
+  }, [imageEntries]);
+
+  useEffect(() => {
+    return () => {
+      imageEntriesRef.current.forEach((entry) => URL.revokeObjectURL(entry.previewUrl));
+    };
+  }, []);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []).filter((file) =>
+      file.type.startsWith("image/"),
+    );
+
+    if (files.length > 0) {
+      const entries: ImageAnalysisEntry[] = files.map((file, index) => ({
+        id: `${file.name}-${file.lastModified}-${file.size}-${index}`,
+        file,
+        previewUrl: URL.createObjectURL(file),
+        detections: [],
+        models: [],
+      }));
+
+      setImageEntries((prev) => {
+        prev.forEach((entry) => URL.revokeObjectURL(entry.previewUrl));
+        return entries;
+      });
+      setSelectedImageIndex(0);
+      performRealAnalysis(entries);
+    }
+
+    event.target.value = "";
   };
 
   const addLog = (msg: string) => {
     setScanLogs((prev) => [...prev.slice(-4), msg]);
   };
 
-  const performRealAnalysis = async (file: File) => {
+  const clearImageEntries = () => {
+    setImageEntries((prev) => {
+      prev.forEach((entry) => URL.revokeObjectURL(entry.previewUrl));
+      return [];
+    });
+    setSelectedImageIndex(0);
+    setSelectedModels([]);
+    setScanLogs([]);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const performRealAnalysis = async (entries: ImageAnalysisEntry[]) => {
+    if (entries.length === 0) return;
+
     setIsScanning(true);
     setScanLogs([]);
-    setDetections([]);
-    setAvailableModels([]);
+    setImageEntries((prev) =>
+      prev.map((entry) => ({ ...entry, detections: [], models: [] })),
+    );
     setSelectedModels([]);
     setError(null);
 
@@ -138,12 +198,15 @@ export default function AnalysisPage() {
     addLog("[BUFFER] AISLANDO CAMAS DE BIOMASA...");
     await new Promise((r) => setTimeout(r, 400));
     addLog("[ML] EJECUTANDO INFERENCIA MULTI-MODELO...");
+    addLog(`[INGESTA] ${entries.length} IMAGENES EN COLA...`);
 
     const formData = new FormData();
-    formData.append("file", file);
+    entries.forEach((entry) => {
+      formData.append("files", entry.file, entry.file.name);
+    });
 
     try {
-      const response = await fetch("http://localhost:3100/pests/analyze", {
+      const response = await fetch("http://localhost:3100/pests/analyze/batch", {
         method: "POST",
         body: formData,
       });
@@ -155,48 +218,55 @@ export default function AnalysisPage() {
       addLog("[BD] EMPAREJANDO ADN DEL PATÓGENO...");
       await new Promise((r) => setTimeout(r, 800));
 
-      const responseModels = Array.isArray(data.models)
-        ? data.models.filter(
-          (m: unknown): m is string => typeof m === "string" && m.trim().length > 0,
-        )
-        : [];
+      const batchResults = Array.isArray(data.results) ? data.results : [];
+      const parsedEntries = entries.map((entry, index) => {
+        const result = batchResults[index] ?? {};
+        const resultModels = Array.isArray(result.models)
+          ? result.models.filter(
+            (m: unknown): m is string => typeof m === "string" && m.trim().length > 0,
+          )
+          : [];
+        const parsedDetections = Array.isArray(result.detections)
+          ? result.detections.map(
+            (d: {
+              className?: string;
+              class?: string;
+              confidence: number;
+              box: [number, number, number, number];
+              model?: string | null;
+            }) => ({
+              pest: d.className ?? d.class ?? "desconocido",
+              confidence: Math.round(d.confidence * 100),
+              box: d.box,
+              model: d.model ?? "modelo_desconocido",
+            }),
+          )
+          : [];
 
-      if (data.detections && data.detections.length > 0) {
-        const parsedDetections = data.detections.map(
-          (d: {
-            className?: string;
-            class?: string;
-            confidence: number;
-            box: [number, number, number, number];
-            model?: string | null;
-          }) => ({
-            pest: d.className ?? d.class ?? "desconocido",
-            confidence: Math.round(d.confidence * 100),
-            box: d.box,
-            model: d.model ?? "modelo_desconocido",
-          }),
-        );
-        const modelsUsed = responseModels.length > 0
-          ? responseModels
-          : Array.from(new Set(parsedDetections.map((d: Detection) => d.model)));
+        return {
+          ...entry,
+          detections: parsedDetections,
+          models: resultModels.length > 0
+            ? resultModels
+            : Array.from(new Set(parsedDetections.map((d: Detection) => d.model))),
+        };
+      });
 
-        setDetections(parsedDetections);
-        setAvailableModels(modelsUsed);
-        addLog(`[RESULTADO] ${parsedDetections.length} OBJETIVOS IDENTIFICADOS.`);
-        addLog(`[MODELOS] ${modelsUsed.length} EN USO.`);
+      setImageEntries(parsedEntries);
+      const totalDetections = parsedEntries.reduce((sum, entry) => sum + entry.detections.length, 0);
+      const totalModels = parsedEntries.reduce((sum, entry) => sum + entry.models.length, 0);
+
+      if (totalDetections > 0) {
+        addLog(`[RESULTADO] ${totalDetections} OBJETIVOS EN ${parsedEntries.length} IMAGENES.`);
       } else {
-        setDetections([]);
-        setAvailableModels(responseModels);
-        if (responseModels.length > 0) {
-          addLog(`[MODELOS] ${responseModels.length} EN USO.`);
-        }
-        addLog("[RESULTADO] ESTADO ESPÉCIMEN: SALUDABLE.");
+        addLog("[RESULTADO] ESTADO ESPECIMEN: SALUDABLE.");
       }
-      addLog("[PROTOCOLO] RECETA AGRÍCOLA AISLADA.");
+      addLog(`[MODELOS] ${totalModels} MODELOS TOTALES REPORTADOS.`);
+      addLog("[PROTOCOLO] RECETA AGRICOLA AISLADA.");
       await new Promise((r) => setTimeout(r, 400));
     } catch (err) {
       console.error("Analysis Error:", err);
-      setError("Error conectando al enlace neural. Asegúrese que el backend esté activo.");
+      setError("Error conectando al enlace neural batch. Asegurese que el backend este activo.");
       addLog("[ERROR] ENLACE NEURAL DESCONECTADO.");
     } finally {
       setIsScanning(false);
@@ -316,6 +386,35 @@ export default function AnalysisPage() {
               })}
             </div>
           </div>
+          {imageEntries.length > 0 && (
+            <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/5 px-3 py-3 shadow-sm dark:shadow-none">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400">
+                  Lote de Imagenes
+                </p>
+                <p className="text-[10px] font-mono uppercase text-gray-500 dark:text-gray-500">
+                  {selectedImageIndex + 1}/{imageEntries.length}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {imageEntries.map((entry, index) => {
+                  const active = index === selectedImageIndex;
+                  return (
+                    <button
+                      key={entry.id}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${active
+                        ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-700 dark:text-[#00ff9d]"
+                        : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-emerald-400/50"
+                        }`}
+                    >
+                      {index + 1}. {entry.file.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-3xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200 dark:border-white/5 group shadow-sm dark:shadow-none">
             <AnimatePresence mode="wait">
               {!selectedImage ? (
@@ -592,7 +691,7 @@ export default function AnalysisPage() {
                   <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center pointer-events-none">
                     <div className="flex gap-2 pointer-events-auto">
                       <button
-                        onClick={() => setSelectedImage(null)}
+                        onClick={clearImageEntries}
                         className="p-3 bg-white/60 dark:bg-black/60 backdrop-blur-xl rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-all group"
                       >
                         <Upload className="w-5 h-5 text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white" />
@@ -600,9 +699,7 @@ export default function AnalysisPage() {
                     </div>
                     {!isScanning && (
                       <button
-                        onClick={() =>
-                          imageFile && performRealAnalysis(imageFile)
-                        }
+                        onClick={() => imageEntries.length > 0 && performRealAnalysis(imageEntries)}
                         className="px-6 py-3 bg-emerald-100 dark:bg-[#00ff9d]/20 dark:backdrop-blur-xl rounded-xl border border-emerald-400 dark:border-[#00ff9d]/30 text-emerald-700 dark:text-[#00ff9d] text-xs font-black italic tracking-widest flex items-center gap-3 pointer-events-auto hover:bg-emerald-200 dark:hover:bg-[#00ff9d]/30 transition-all shadow-sm dark:shadow-[0_0_20px_rgba(0,255,157,0.1)]"
                       >
                         <Search className="w-4 h-4" /> RE-PROCESAR ENLACE NEURAL
@@ -618,6 +715,7 @@ export default function AnalysisPage() {
               onChange={handleImageUpload}
               className="hidden"
               accept="image/*"
+              multiple
             />
           </div>
 
