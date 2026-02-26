@@ -1,10 +1,10 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3100';
+import { URL_BACKEND } from '@/shared/config/backend-url';
 
 import { getToken } from '@/lib/auth-helpers';
 
 export async function getProfile() {
     const token = getToken();
-    const res = await fetch(`${API_URL}/auth/me`, {
+    const res = await fetch(`${URL_BACKEND}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error('Error al obtener perfil');
@@ -13,7 +13,7 @@ export async function getProfile() {
 
 export async function updateProfile(data: { name?: string; email?: string; farmName?: string }) {
     const token = getToken();
-    const res = await fetch(`${API_URL}/auth/profile`, {
+    const res = await fetch(`${URL_BACKEND}/auth/profile`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ export async function updateProfile(data: { name?: string; email?: string; farmN
 
 export async function changePassword(currentPassword: string, newPassword: string) {
     const token = getToken();
-    const res = await fetch(`${API_URL}/auth/change-password`, {
+    const res = await fetch(`${URL_BACKEND}/auth/change-password`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
 
 export async function toggle2Fa(isEnabled: boolean) {
     const token = getToken();
-    const res = await fetch(`${API_URL}/auth/2fa/toggle`, {
+    const res = await fetch(`${URL_BACKEND}/auth/2fa/toggle`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export async function toggle2Fa(isEnabled: boolean) {
 
 export async function getConnectedDevices() {
     const token = getToken();
-    const res = await fetch(`${API_URL}/auth/devices`, {
+    const res = await fetch(`${URL_BACKEND}/auth/devices`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error('Error al obtener dispositivos');
