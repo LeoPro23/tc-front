@@ -243,11 +243,17 @@ export default function SettingsPage() {
                             {devices.length === 0 ? (
                                 <p className="text-sm text-slate-500 dark:text-slate-400">Cargando dispositivos...</p>
                             ) : (
-                                <ul className="space-y-2">
-                                    {devices.map(d => (
-                                        <li key={d.id} className="text-xs flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
-                                            {d.name} ({d.os}) - Activo ahora
+                                <ul className="space-y-3">
+                                    {devices.map((d: any) => (
+                                        <li key={d.userSessionId} className="text-sm flex flex-col gap-1 text-slate-600 dark:text-slate-300 bg-white dark:bg-[#1a1a1a] p-3 rounded-md border border-slate-100 dark:border-white/5 shadow-sm">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
+                                                <strong className="text-slate-900 dark:text-white truncate">{d.userAgent || 'Dispositivo Desconocido'}</strong>
+                                            </div>
+                                            <div className="text-xs text-slate-500 flex justify-between ml-4">
+                                                <span>IP: {d.ipAddress || 'Oculta'}</span>
+                                                <span>Activo: {new Date(d.createdAt).toLocaleDateString()}</span>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
