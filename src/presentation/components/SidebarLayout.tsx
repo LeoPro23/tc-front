@@ -11,7 +11,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     const navItems = [
         { href: "/", label: "Panel", icon: LayoutDashboard },
         { href: "/scan-history", label: "Historial", icon: History },
-        { href: "/analysis", label: "Análisis", icon: FileText },
         { href: "/settings", label: "Configuración", icon: Settings },
     ];
 
@@ -35,7 +34,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 {/* Scan CTA Button */}
                 <div className="px-4 pt-4">
                     <Link
-                        href="/scan"
+                        href="/analysis"
                         className="group relative flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-lg active:scale-95"
                         style={{
                             background: "linear-gradient(135deg, #FF6347 0%, #FF4500 50%, #32CD32 100%)",
