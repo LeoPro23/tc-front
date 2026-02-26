@@ -24,6 +24,7 @@ interface Detection {
   pest: string;
   confidence: number;
   box: [number, number, number, number];
+  model: string;
 }
 
 interface AgronomicRecipe {
@@ -61,6 +62,8 @@ export default function AnalysisPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [detections, setDetections] = useState<Detection[]>([]);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -126,13 +129,15 @@ export default function AnalysisPage() {
     setIsScanning(true);
     setScanLogs([]);
     setDetections([]);
+    setAvailableModels([]);
+    setSelectedModels([]);
     setError(null);
 
     addLog("[SISTEMA] ACCEDIENDO AL NÚCLEO NEURONAL TOMATOCODE...");
     await new Promise((r) => setTimeout(r, 600));
     addLog("[BUFFER] AISLANDO CAMAS DE BIOMASA...");
     await new Promise((r) => setTimeout(r, 400));
-    addLog("[ML] EJECUTANDO VIGILANCIA YOLOv8x-AGRI...");
+    addLog("[ML] EJECUTANDO INFERENCIA MULTI-MODELO...");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -150,23 +155,41 @@ export default function AnalysisPage() {
       addLog("[BD] EMPAREJANDO ADN DEL PATÓGENO...");
       await new Promise((r) => setTimeout(r, 800));
 
+      const responseModels = Array.isArray(data.models)
+        ? data.models.filter(
+          (m: unknown): m is string => typeof m === "string" && m.trim().length > 0,
+        )
+        : [];
+
       if (data.detections && data.detections.length > 0) {
-        setDetections(
-          data.detections.map(
-            (d: {
-              className: string;
-              confidence: number;
-              box: [number, number, number, number];
-            }) => ({
-              pest: d.className,
-              confidence: Math.round(d.confidence * 100),
-              box: d.box,
-            }),
-          ),
+        const parsedDetections = data.detections.map(
+          (d: {
+            className?: string;
+            class?: string;
+            confidence: number;
+            box: [number, number, number, number];
+            model?: string | null;
+          }) => ({
+            pest: d.className ?? d.class ?? "desconocido",
+            confidence: Math.round(d.confidence * 100),
+            box: d.box,
+            model: d.model ?? "modelo_desconocido",
+          }),
         );
-        addLog(`[RESULTADO] ${data.detections.length} OBJETIVOS IDENTIFICADOS.`);
+        const modelsUsed = responseModels.length > 0
+          ? responseModels
+          : Array.from(new Set(parsedDetections.map((d: Detection) => d.model)));
+
+        setDetections(parsedDetections);
+        setAvailableModels(modelsUsed);
+        addLog(`[RESULTADO] ${parsedDetections.length} OBJETIVOS IDENTIFICADOS.`);
+        addLog(`[MODELOS] ${modelsUsed.length} EN USO.`);
       } else {
         setDetections([]);
+        setAvailableModels(responseModels);
+        if (responseModels.length > 0) {
+          addLog(`[MODELOS] ${responseModels.length} EN USO.`);
+        }
         addLog("[RESULTADO] ESTADO ESPÉCIMEN: SALUDABLE.");
       }
       addLog("[PROTOCOLO] RECETA AGRÍCOLA AISLADA.");
@@ -180,7 +203,29 @@ export default function AnalysisPage() {
     }
   };
 
-  const primaryDetection = detections[0] || null;
+  const modelNames = availableModels.length > 0
+    ? availableModels
+    : Array.from(new Set(detections.map((d) => d.model)));
+  const filteredDetections = selectedModels.length === 0
+    ? detections
+    : detections.filter((d) => selectedModels.includes(d.model));
+  const activeFilterLabel = selectedModels.length === 0
+    ? "TODOS"
+    : selectedModels.join(" | ");
+
+  const toggleModel = (model: string) => {
+    setSelectedModels((prev) =>
+      prev.includes(model)
+        ? prev.filter((m) => m !== model)
+        : [...prev, model],
+    );
+  };
+
+  const primaryDetection = filteredDetections.reduce<Detection | null>(
+    (best, current) =>
+      !best || current.confidence > best.confidence ? current : best,
+    null,
+  );
 
   const getRecipe = (pest: string) => {
     const key = Object.keys(RECIPES).find(
@@ -235,6 +280,42 @@ export default function AnalysisPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
         {/* Main Analysis Area */}
         <main className="lg:col-span-8 flex flex-col gap-6">
+          <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/5 px-3 py-3 shadow-sm dark:shadow-none">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400">
+                Filtro de Modelos
+              </p>
+              <p className="text-[10px] font-mono uppercase text-gray-500 dark:text-gray-500 truncate max-w-[45%] text-right">
+                Activo: {activeFilterLabel}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              <button
+                onClick={() => setSelectedModels([])}
+                className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedModels.length === 0
+                    ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-700 dark:text-[#00ff9d]"
+                    : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-emerald-400/50"
+                  }`}
+              >
+                Todos
+              </button>
+              {modelNames.map((model) => {
+                const active = selectedModels.includes(model);
+                return (
+                  <button
+                    key={model}
+                    onClick={() => toggleModel(model)}
+                    className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${active
+                        ? "bg-[#ff003c]/20 border-[#ff003c]/60 text-[#ff003c]"
+                        : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-[#ff003c]/40"
+                      }`}
+                  >
+                    {model}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-3xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200 dark:border-white/5 group shadow-sm dark:shadow-none">
             <AnimatePresence mode="wait">
               {!selectedImage ? (
@@ -422,7 +503,7 @@ export default function AnalysisPage() {
 
                   {/* Tech HUD Bounding Boxes */}
                   {!isScanning &&
-                    detections.map((det, i) => (
+                    filteredDetections.map((det, i) => (
                       <motion.div
                         key={i}
                         initial={{ opacity: 0, scale: 0.5 }}
@@ -452,6 +533,7 @@ export default function AnalysisPage() {
                           <div className="bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-b-md flex justify-between gap-4">
                             <span>CONFIANZA</span>
                             <span>{det.confidence}%</span>
+                            <span className="max-w-28 truncate uppercase">{det.model}</span>
                           </div>
                         </div>
                       </motion.div>
@@ -476,8 +558,25 @@ export default function AnalysisPage() {
                     </motion.div>
                   )}
 
+                  {!isScanning && selectedImage && detections.length > 0 && filteredDetections.length === 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-gray-50 dark:bg-white/10 dark:backdrop-blur-xl border-2 border-gray-300 dark:border-white/20 px-8 py-5 rounded-3xl z-40 shadow-lg"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <h2 className="text-lg font-black italic tracking-tighter uppercase">
+                          Sin Objetivos Visibles
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-300 text-[10px] font-mono tracking-widest font-black">
+                          AJUSTA EL FILTRO DE MODELOS
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* Post-Scan Overlay Info */}
-                  {!isScanning && detections.length > 0 && (
+                  {!isScanning && filteredDetections.length > 0 && (
                     <div className="absolute top-4 right-4 flex flex-col gap-2">
                       <div className="px-3 py-1.5 bg-white/80 dark:bg-black/80 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/10 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#ff003c] animate-pulse"></div>
@@ -536,7 +635,10 @@ export default function AnalysisPage() {
                       Metadatos de Predicción
                     </h3>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
-                      MODELO: YOLOv8x
+                      MODELOS: {modelNames.length > 0 ? modelNames.join(" | ") : "N/D"}
+                    </p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
+                      FILTRO: {activeFilterLabel}
                     </p>
                   </div>
                 </div>
@@ -546,7 +648,7 @@ export default function AnalysisPage() {
                       Conteo de Detecciones
                     </span>
                     <span className="font-bold">
-                      {detections.length} Objetivos
+                      {filteredDetections.length} Objetivos
                     </span>
                   </div>
                   <div className="flex justify-between text-[10px] pt-3 border-t border-gray-100 dark:border-white/5">
