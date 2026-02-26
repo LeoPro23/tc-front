@@ -19,6 +19,7 @@ import {
   Thermometer,
 } from "lucide-react";
 import Link from "next/link";
+import { URL_BACKEND } from "@/shared/config/backend-url";
 
 interface Detection {
   pest: string;
@@ -33,6 +34,8 @@ interface ImageAnalysisEntry {
   previewUrl: string;
   detections: Detection[];
   models: string[];
+  verified: boolean;
+  verificationReason: string | null;
 }
 
 interface AgronomicRecipe {
@@ -151,6 +154,8 @@ export default function AnalysisPage() {
         previewUrl: URL.createObjectURL(file),
         detections: [],
         models: [],
+        verified: true,
+        verificationReason: null,
       }));
 
       setImageEntries((prev) => {
@@ -188,7 +193,13 @@ export default function AnalysisPage() {
     setIsScanning(true);
     setScanLogs([]);
     setImageEntries((prev) =>
-      prev.map((entry) => ({ ...entry, detections: [], models: [] })),
+      prev.map((entry) => ({
+        ...entry,
+        detections: [],
+        models: [],
+        verified: true,
+        verificationReason: null,
+      })),
     );
     setSelectedModels([]);
     setError(null);
@@ -206,7 +217,7 @@ export default function AnalysisPage() {
     });
 
     try {
-      const response = await fetch("http://localhost:3100/pests/analyze/batch", {
+      const response = await fetch(`${URL_BACKEND}/pests/analyze/batch`, {
         method: "POST",
         body: formData,
       });
@@ -249,6 +260,11 @@ export default function AnalysisPage() {
           models: resultModels.length > 0
             ? resultModels
             : Array.from(new Set(parsedDetections.map((d: Detection) => d.model))),
+          verified: result.verified !== false,
+          verificationReason:
+            typeof result.verificationReason === "string" && result.verificationReason.trim().length > 0
+              ? result.verificationReason
+              : null,
         };
       });
 
@@ -256,10 +272,14 @@ export default function AnalysisPage() {
       const totalDetections = parsedEntries.reduce((sum, entry) => sum + entry.detections.length, 0);
       const totalModels = parsedEntries.reduce((sum, entry) => sum + entry.models.length, 0);
 
+      const rejectedCount = parsedEntries.filter((entry) => !entry.verified).length;
       if (totalDetections > 0) {
         addLog(`[RESULTADO] ${totalDetections} OBJETIVOS EN ${parsedEntries.length} IMAGENES.`);
       } else {
         addLog("[RESULTADO] ESTADO ESPECIMEN: SALUDABLE.");
+      }
+      if (rejectedCount > 0) {
+        addLog(`[VERIFICACION] ${rejectedCount} IMAGENES RECHAZADAS.`);
       }
       addLog(`[MODELOS] ${totalModels} MODELOS TOTALES REPORTADOS.`);
       addLog("[PROTOCOLO] RECETA AGRICOLA AISLADA.");
@@ -399,12 +419,15 @@ export default function AnalysisPage() {
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {imageEntries.map((entry, index) => {
                   const active = index === selectedImageIndex;
+                  const rejected = entry.verified === false;
                   return (
                     <button
                       key={entry.id}
                       onClick={() => setSelectedImageIndex(index)}
                       className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${active
-                        ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-700 dark:text-[#00ff9d]"
+                        ? (rejected
+                          ? "bg-amber-500/20 border-amber-500/60 text-amber-700 dark:text-amber-300"
+                          : "bg-emerald-500/20 border-emerald-500/60 text-emerald-700 dark:text-[#00ff9d]")
                         : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-emerald-400/50"
                         }`}
                     >
@@ -639,7 +662,7 @@ export default function AnalysisPage() {
                     ))}
 
                   {/* Clean Specimen Post-Scan UI */}
-                  {!isScanning && selectedImage && detections.length === 0 && (
+                  {!isScanning && selectedImage && detections.length === 0 && selectedEntry?.verified !== false && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -652,6 +675,23 @@ export default function AnalysisPage() {
                         </h2>
                         <p className="text-emerald-600 dark:text-[#00ff9d] text-[10px] font-mono tracking-widest font-black">
                           SIN FIRMAS DE PATÓGENOS
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {!isScanning && selectedImage && selectedEntry?.verified === false && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-amber-50 dark:bg-amber-500/10 dark:backdrop-blur-xl border-2 border-amber-400 dark:border-amber-300/60 px-8 py-5 rounded-3xl z-40 shadow-lg"
+                    >
+                      <div className="flex flex-col items-center gap-2 max-w-md text-center">
+                        <h2 className="text-lg font-black italic tracking-tighter uppercase">
+                          Imagen No Valida Para Analisis
+                        </h2>
+                        <p className="text-amber-700 dark:text-amber-200 text-[10px] font-mono tracking-widest font-black">
+                          {selectedEntry.verificationReason ?? "No corresponde a cultivo/plaga de tomate."}
                         </p>
                       </div>
                     </motion.div>
@@ -737,6 +777,9 @@ export default function AnalysisPage() {
                     </p>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                       FILTRO: {activeFilterLabel}
+                    </p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
+                      VERIFICACION: {selectedEntry?.verified === false ? "RECHAZADA" : "APROBADA"}
                     </p>
                   </div>
                 </div>

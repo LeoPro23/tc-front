@@ -11,4 +11,6 @@ export interface PestAnalysisResult {
     filename: string;
     detections: PestDetection[];
     models?: string[];
+    verified?: boolean;
+    verificationReason?: string | null;
 }
