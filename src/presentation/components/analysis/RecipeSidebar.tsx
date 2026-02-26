@@ -1,15 +1,69 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight, Cpu, ShieldCheck, TrendingUp, Zap } from "lucide-react";
-import type { AgronomicRecipe, Detection } from "./types";
+import {
+  ChevronRight,
+  Cpu,
+  ShieldCheck,
+  TrendingUp,
+  Zap,
+  Loader2,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import type { AgronomicRecipe, Detection, User, ReportData } from "./types";
+import { ReportTemplate } from "./ReportTemplate";
+import { generateRecipePDF } from "@/lib/pdf-export";
+import { getUser } from "@/lib/auth-helpers";
+import { toast } from "sonner";
 
 interface RecipeSidebarProps {
   recipe: AgronomicRecipe | null;
   primaryDetection: Detection | null;
 }
 
-export function RecipeSidebar({ recipe, primaryDetection }: RecipeSidebarProps) {
+export function RecipeSidebar({
+  recipe,
+  primaryDetection,
+}: RecipeSidebarProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [userData, setUserData] = useState<User | null>(null);
+
+  useEffect(() => {
+    const user = getUser<User>();
+    setUserData(user);
+  }, []);
+
+  const handleGeneratePDF = async () => {
+    if (!reportRef.current || !recipe || !primaryDetection) return;
+
+    try {
+      setIsGenerating(true);
+      const filename = `Reporte-Agro-${primaryDetection.pest.replace(/\s+/g, "-")}.pdf`;
+      await generateRecipePDF(reportRef.current, filename);
+      toast.success("Reporte PDF generado exitosamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al generar el reporte PDF");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const reportData: ReportData = {
+    user: userData,
+    detection: primaryDetection,
+    recipe: recipe,
+    date: new Date().toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }),
+  };
+
   return (
-    <aside className="lg:col-span-4 flex flex-col gap-6">
+    <aside className="lg:col-span-4 flex flex-col gap-6 relative">
+      {/* Elemento oculto para renderizado de PDF */}
+      <ReportTemplate data={reportData} containerRef={reportRef} />
+
       <div className="bg-white dark:bg-[#111] dark:backdrop-blur-xl p-8 rounded-[2rem] border border-gray-200 dark:border-white/5 flex flex-col h-full shadow-sm dark:shadow-none">
         <h2 className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
           <span className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full"></span>
@@ -129,9 +183,22 @@ export function RecipeSidebar({ recipe, primaryDetection }: RecipeSidebarProps) 
                 }}
                 className="pt-8 border-t border-gray-200 dark:border-white/5"
               >
-                <button className="group w-full py-5 bg-gray-100 dark:bg-white/5 border-2 border-gray-200 dark:border-white/10 rounded-3xl text-[11px] font-mono text-gray-500 uppercase tracking-[0.3em] hover:bg-emerald-50 dark:hover:bg-[#00ff9d]/10 hover:border-emerald-400 dark:hover:border-[#00ff9d]/50 hover:text-gray-900 dark:hover:text-white transition-all duration-300 flex items-center justify-center gap-4">
-                  <span>Generar Reporte PDF</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <button
+                  onClick={handleGeneratePDF}
+                  disabled={isGenerating}
+                  className="group w-full py-5 bg-gray-100 dark:bg-white/5 border-2 border-gray-200 dark:border-white/10 rounded-3xl text-[11px] font-mono text-gray-500 uppercase tracking-[0.3em] hover:bg-emerald-50 dark:hover:bg-[#00ff9d]/10 hover:border-emerald-400 dark:hover:border-[#00ff9d]/50 hover:text-gray-900 dark:hover:text-white transition-all duration-300 flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-[#00ff9d]" />
+                      <span>Procesando Neural PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Generar Reporte PDF</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
                 </button>
               </motion.div>
             </motion.div>

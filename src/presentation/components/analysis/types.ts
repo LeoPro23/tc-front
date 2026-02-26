@@ -21,6 +21,20 @@ export interface AgronomicRecipe {
   method: string;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface ReportData {
+  user: User | null;
+  detection: Detection | null;
+  recipe: AgronomicRecipe | null;
+  date: string;
+}
+
 export interface ImageNaturalSize {
   w: number;
   h: number;
