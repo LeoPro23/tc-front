@@ -27,8 +27,16 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
         ref={containerRef}
         className="w-[800px] bg-[#0a0a0a] text-white p-12 font-sans relative overflow-hidden"
       >
-        {/* Background Decorations */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00ff9d05_1px,transparent_1px),linear-gradient(to_bottom,#00ff9d05_1px,transparent_1px)] bg-[size:40px_40px]" />
+        {/* Background Decorations - Restored for html-to-image */}
+        <div className="absolute inset-0 bg-[#0a0a0a]" />
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, #00ff9d05 1px, transparent 1px), linear-gradient(to bottom, #00ff9d05 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#00ff9d]/5 blur-[100px] rounded-full" />
 
         {/* Header */}

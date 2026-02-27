@@ -1,34 +1,35 @@
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import React from "react";
+import { domToPng } from "modern-screenshot";
 
 export async function generateRecipePDF(
   element: HTMLElement,
   filename: string = "reporte-tomatocode.pdf",
 ): Promise<void> {
   try {
-    const canvas = await html2canvas(element, {
-      scale: 2, // Para mayor resolución
-      useCORS: true,
+    // modern-screenshot es más robusto y maneja mejor las fuentes
+    // y los estilos complejos de Tailwind 4 / CSS moderno.
+    const imgData = await domToPng(element, {
+      scale: 2, // Para alta resolución
       backgroundColor: "#0a0a0a",
-      logging: false,
+      // Opciones adicionales de estabilidad si fueran necesarias
+      debug: false,
     });
 
-    const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
 
-    const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
 
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(filename);
   } catch (error) {
     console.error("Error al generar PDF:", error);
-    throw new Error("No se pudo generar el archivo PDF.");
+    throw new Error(
+      "No se pudo generar el archivo PDF (Error de procesamiento visual).",
+    );
   }
 }
