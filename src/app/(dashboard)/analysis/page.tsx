@@ -9,13 +9,157 @@ import {
   ImageBatchTabs,
   ModelFilterTabs,
   PredictionMetadataCard,
-  RECIPES,
   RecipeSidebar,
   type AgronomicRecipe,
+  type BatchInterpretation,
   type Detection,
   type ImageAnalysisEntry,
+  type PerImageInterpretation,
 } from "@/presentation/components/analysis";
 import { URL_BACKEND } from "@/shared/config/backend-url";
+
+function asText(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function parsePerImageInterpretation(value: unknown): PerImageInterpretation | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const item = value as Record<string, unknown>;
+  const filename = asText(item.filename);
+  const targetPest = asText(item.targetPest ?? item.target_pest);
+  const recipeRaw = item.recipe as Record<string, unknown> | undefined;
+  const biosecurityRaw = item.biosecurity as Record<string, unknown> | undefined;
+
+  const product = asText(recipeRaw?.product);
+  const dose = asText(recipeRaw?.dose);
+  const method = asText(recipeRaw?.method);
+  const status = asText(biosecurityRaw?.status);
+  const protocol = asText(biosecurityRaw?.protocol);
+
+  if (!filename || !targetPest || !product || !dose || !method || !status || !protocol) {
+    return null;
+  }
+
+  return {
+    filename,
+    targetPest,
+    recipe: {
+      product,
+      dose,
+      method,
+    },
+    biosecurityStatus: status.toUpperCase(),
+    biosecurityProtocol: protocol,
+  };
+}
+
+function parseBatchInterpretation(value: unknown): BatchInterpretation | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+  const generalSummary = asText(raw.generalSummary ?? raw.general_summary);
+  if (!generalSummary) {
+    return null;
+  }
+
+  const perImageArray = Array.isArray(raw.perImage)
+    ? raw.perImage
+    : Array.isArray(raw.per_image)
+      ? raw.per_image
+      : [];
+
+  const perImage = perImageArray
+    .map(parsePerImageInterpretation)
+    .filter((item): item is PerImageInterpretation => item !== null);
+
+  return {
+    generalSummary,
+    perImage,
+  };
+}
+
+function getTopDetection(detections: Detection[]): Detection | null {
+  return detections.reduce<Detection | null>(
+    (best, current) => (!best || current.confidence > best.confidence ? current : best),
+    null,
+  );
+}
+
+function buildFallbackImageInterpretation(entry: {
+  verified: boolean;
+  verificationReason: string | null;
+  detections: Detection[];
+}): {
+  targetPest: string;
+  recipe: AgronomicRecipe;
+  biosecurityStatus: string;
+  biosecurityProtocol: string;
+} {
+  if (!entry.verified) {
+    return {
+      targetPest: "No aplicable",
+      recipe: {
+        product: "No aplica",
+        dose: "No aplica",
+        method:
+          entry.verificationReason ??
+          "Imagen fuera del dominio de inspeccion agricola de tomate.",
+      },
+      biosecurityStatus: "RECHAZADA",
+      biosecurityProtocol:
+        entry.verificationReason ??
+        "Solicitar una imagen valida (hoja, planta, trampa o contexto de inspeccion de tomate).",
+    };
+  }
+
+  const topDetection = getTopDetection(entry.detections);
+  if (!topDetection) {
+    return {
+      targetPest: "Sin plaga detectada",
+      recipe: {
+        product: "Monitoreo preventivo",
+        dose: "No aplica",
+        method:
+          "Mantener monitoreo semanal, higiene del cultivo y seguimiento de focos tempranos.",
+      },
+      biosecurityStatus: "LIMPIO",
+      biosecurityProtocol:
+        "No se requieren medidas correctivas inmediatas. Continuar vigilancia rutinaria.",
+    };
+  }
+
+  const status = topDetection.confidence >= 70 ? "ALTA PRIORIDAD" : "VIGILANCIA";
+  return {
+    targetPest: topDetection.pest,
+    recipe: {
+      product: `Control dirigido para ${topDetection.pest}`,
+      dose: "Aplicar segun etiqueta tecnica y evaluacion en campo",
+      method:
+        "Aplicacion focalizada en zonas afectadas, retiro de tejido comprometido y re-evaluacion en 48-72 horas.",
+    },
+    biosecurityStatus: status,
+    biosecurityProtocol:
+      "Aislar focos activos, reforzar monitoreo y ajustar manejo fitosanitario segun evolucion del lote.",
+  };
+}
+
+function buildFallbackGeneralSummary(entries: ImageAnalysisEntry[]): string {
+  const rejected = entries.filter((entry) => !entry.verified).length;
+  const withDetections = entries.filter((entry) => entry.verified && entry.detections.length > 0).length;
+  const clean = entries.length - rejected - withDetections;
+
+  return `Lote procesado: ${withDetections} imagenes con hallazgos, ${clean} sin plagas detectadas y ${rejected} rechazadas por verificacion.`;
+}
 
 export default function AnalysisPage() {
   const [isScanning, setIsScanning] = useState(false);
@@ -23,6 +167,7 @@ export default function AnalysisPage() {
   const [imageEntries, setImageEntries] = useState<ImageAnalysisEntry[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [globalSummary, setGlobalSummary] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -69,6 +214,10 @@ export default function AnalysisPage() {
         models: [],
         verified: true,
         verificationReason: null,
+        targetPest: null,
+        recipe: null,
+        biosecurityStatus: null,
+        biosecurityProtocol: null,
       }));
 
       setImageEntries((prev) => {
@@ -89,6 +238,7 @@ export default function AnalysisPage() {
     });
     setSelectedImageIndex(0);
     setSelectedModels([]);
+    setGlobalSummary(null);
     setScanLogs([]);
     setError(null);
 
@@ -109,9 +259,14 @@ export default function AnalysisPage() {
         models: [],
         verified: true,
         verificationReason: null,
+        targetPest: null,
+        recipe: null,
+        biosecurityStatus: null,
+        biosecurityProtocol: null,
       })),
     );
     setSelectedModels([]);
+    setGlobalSummary(null);
     setError(null);
 
     addLog("[SISTEMA] ACCEDIENDO AL NUCLEO NEURONAL TOMATOCODE...");
@@ -139,6 +294,12 @@ export default function AnalysisPage() {
       addLog("[BD] EMPAREJANDO ADN DEL PATOGENO...");
       await new Promise((r) => setTimeout(r, 800));
 
+      const interpretation = parseBatchInterpretation(data.interpretation);
+      const interpretationByFilename = new Map<string, PerImageInterpretation>();
+      interpretation?.perImage.forEach((item) => {
+        interpretationByFilename.set(item.filename.toLowerCase(), item);
+      });
+
       const batchResults = Array.isArray(data.results) ? data.results : [];
       const parsedEntries = entries.map((entry, index) => {
         const result = batchResults[index] ?? {};
@@ -163,6 +324,21 @@ export default function AnalysisPage() {
             )
           : [];
 
+        const verified = result.verified !== false;
+        const verificationReason =
+          typeof result.verificationReason === "string" && result.verificationReason.trim().length > 0
+            ? result.verificationReason
+            : null;
+
+        const fallbackInterpretation = buildFallbackImageInterpretation({
+          verified,
+          verificationReason,
+          detections: parsedDetections,
+        });
+
+        const interpretedEntry =
+          interpretationByFilename.get(entry.file.name.toLowerCase()) ?? interpretation?.perImage[index] ?? null;
+
         return {
           ...entry,
           detections: parsedDetections,
@@ -170,15 +346,19 @@ export default function AnalysisPage() {
             resultModels.length > 0
               ? resultModels
               : Array.from(new Set(parsedDetections.map((d: Detection) => d.model))),
-          verified: result.verified !== false,
-          verificationReason:
-            typeof result.verificationReason === "string" && result.verificationReason.trim().length > 0
-              ? result.verificationReason
-              : null,
-        };
+          verified,
+          verificationReason,
+          targetPest: interpretedEntry?.targetPest ?? fallbackInterpretation.targetPest,
+          recipe: interpretedEntry?.recipe ?? fallbackInterpretation.recipe,
+          biosecurityStatus:
+            interpretedEntry?.biosecurityStatus ?? fallbackInterpretation.biosecurityStatus,
+          biosecurityProtocol:
+            interpretedEntry?.biosecurityProtocol ?? fallbackInterpretation.biosecurityProtocol,
+        } satisfies ImageAnalysisEntry;
       });
 
       setImageEntries(parsedEntries);
+      setGlobalSummary(interpretation?.generalSummary ?? buildFallbackGeneralSummary(parsedEntries));
 
       const totalDetections = parsedEntries.reduce((sum, entry) => sum + entry.detections.length, 0);
       const totalModels = parsedEntries.reduce((sum, entry) => sum + entry.models.length, 0);
@@ -195,7 +375,7 @@ export default function AnalysisPage() {
       }
 
       addLog(`[MODELOS] ${totalModels} MODELOS TOTALES REPORTADOS.`);
-      addLog("[PROTOCOLO] RECETA AGRICOLA AISLADA.");
+      addLog("[PROTOCOLO] INTERPRETACION AGRONOMICA COMPLETADA.");
       await new Promise((r) => setTimeout(r, 400));
     } catch (err) {
       console.error("Analysis Error:", err);
@@ -227,12 +407,15 @@ export default function AnalysisPage() {
     null,
   );
 
-  const getRecipe = (pest: string): AgronomicRecipe => {
-    const key = Object.keys(RECIPES).find((recipeKey) => recipeKey.toLowerCase() === pest.toLowerCase());
-    return key ? RECIPES[key] : RECIPES.Saludable;
-  };
-
-  const recipe = primaryDetection ? getRecipe(primaryDetection.pest) : null;
+  const selectedRecipe = selectedEntry?.recipe ?? null;
+  const selectedTargetPest = selectedEntry?.targetPest ?? primaryDetection?.pest ?? null;
+  const selectedBiosecurityStatus =
+    selectedEntry?.biosecurityStatus ?? (primaryDetection ? "ALTA PRIORIDAD" : "LIMPIO");
+  const selectedBiosecurityProtocol =
+    selectedEntry?.biosecurityProtocol ??
+    (primaryDetection
+      ? "Las firmas neurales indican colonizacion activa de patogenos. Se recomienda mitigacion inmediata."
+      : "Escaneo completo sin hallazgos de alta prioridad. Mantener vigilancia rutinaria.");
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white p-6 font-sans transition-colors duration-300">
@@ -279,11 +462,16 @@ export default function AnalysisPage() {
               selectedEntry={selectedEntry}
               filteredDetections={filteredDetections}
             />
-            <BiosecurityCard primaryDetection={primaryDetection} />
+            <BiosecurityCard status={selectedBiosecurityStatus} protocol={selectedBiosecurityProtocol} />
           </div>
         </main>
 
-        <RecipeSidebar recipe={recipe} primaryDetection={primaryDetection} />
+        <RecipeSidebar
+          recipe={selectedRecipe}
+          primaryDetection={primaryDetection}
+          targetPest={selectedTargetPest}
+          globalSummary={globalSummary}
+        />
       </div>
 
       <AnalysisErrorBanner error={error} onClose={() => setError(null)} />

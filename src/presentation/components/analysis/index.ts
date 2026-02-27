@@ -6,11 +6,12 @@ export { PredictionMetadataCard } from "./PredictionMetadataCard";
 export { BiosecurityCard } from "./BiosecurityCard";
 export { RecipeSidebar } from "./RecipeSidebar";
 export { AnalysisErrorBanner } from "./AnalysisErrorBanner";
-export { RECIPES } from "./constants";
 export type {
   Detection,
   ImageAnalysisEntry,
   AgronomicRecipe,
+  PerImageInterpretation,
+  BatchInterpretation,
   ImageNaturalSize,
   ImageRect,
 } from "./types";

@@ -17,15 +17,25 @@ import toast from "react-hot-toast";
 interface RecipeSidebarProps {
   recipe: AgronomicRecipe | null;
   primaryDetection: Detection | null;
+  targetPest: string | null;
+  globalSummary: string | null;
 }
 
 export function RecipeSidebar({
   recipe,
   primaryDetection,
+  targetPest,
+  globalSummary,
 }: RecipeSidebarProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
   const [userData, setUserData] = useState<User | null>(null);
+  const displayPest = targetPest ?? primaryDetection?.pest ?? "Ninguno";
+  const reportDetection: Detection | null = primaryDetection ?? (
+    targetPest
+      ? { pest: targetPest, confidence: 0, box: [0, 0, 0, 0], model: "interpretation" }
+      : null
+  );
 
   useEffect(() => {
     const user = getUser<User>();
@@ -33,11 +43,11 @@ export function RecipeSidebar({
   }, []);
 
   const handleGeneratePDF = async () => {
-    if (!reportRef.current || !recipe || !primaryDetection) return;
+    if (!reportRef.current || !recipe) return;
 
     try {
       setIsGenerating(true);
-      const filename = `Reporte-Agro-${primaryDetection.pest.replace(/\s+/g, "-")}.pdf`;
+      const filename = `Reporte-Agro-${displayPest.replace(/\s+/g, "-")}.pdf`;
       await generateRecipePDF(reportRef.current, filename);
       toast.success("Reporte PDF generado exitosamente");
     } catch (error) {
@@ -50,7 +60,7 @@ export function RecipeSidebar({
 
   const reportData: ReportData = {
     user: userData,
-    detection: primaryDetection,
+    detection: reportDetection,
     recipe: recipe,
     date: new Date().toLocaleDateString("es-ES", {
       year: "numeric",
@@ -69,11 +79,19 @@ export function RecipeSidebar({
           <span className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full"></span>
           REGISTRO AGRI-RECETA
         </h2>
+        {globalSummary && (
+          <div className="mb-6 p-4 rounded-2xl border border-emerald-300/30 bg-emerald-50/80 dark:bg-[#00ff9d]/10">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-700 dark:text-[#00ff9d] mb-1">
+              Resumen General del Lote
+            </p>
+            <p className="text-[11px] leading-relaxed text-gray-700 dark:text-gray-200">{globalSummary}</p>
+          </div>
+        )}
 
         <AnimatePresence mode="wait">
           {recipe ? (
             <motion.div
-              key={primaryDetection?.pest}
+              key={displayPest}
               initial="hidden"
               animate="visible"
               exit="exit"
@@ -97,7 +115,7 @@ export function RecipeSidebar({
                 </p>
                 <div className="flex items-center gap-4">
                   <h3 className="text-4xl font-black italic tracking-tighter uppercase text-gray-900 dark:text-white dark:drop-shadow-[0_0_20px_#ff003c44]">
-                    {primaryDetection?.pest}
+                    {displayPest}
                   </h3>
                   <div className="px-3 py-1 bg-[#ff003c] text-white text-[10px] font-black rounded border-2 border-red-300 dark:border-white/10 shadow-lg dark:shadow-[0_0_15px_#ff003c]">
                     POS
