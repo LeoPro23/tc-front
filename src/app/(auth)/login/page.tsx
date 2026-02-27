@@ -16,6 +16,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 2FA variables
+  const [step, setStep] = useState<"CREDENTIALS" | "2FA">("CREDENTIALS");
+  const [otpCode, setOtpCode] = useState("");
+
   useEffect(() => {
     if (isAuthenticated()) router.replace("/");
   }, [router]);
@@ -24,31 +28,44 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
-      const res = await loginUser({ email, password });
-      saveToken(res.accessToken);
-      saveUser(res.user);
-      router.push("/");
+      if (step === "CREDENTIALS") {
+        const res = await loginUser({ email, password });
+        saveToken(res.accessToken);
+        saveUser(res.user);
+        router.push("/");
+      } else {
+        const res = await loginUser({ email, password, otpCode });
+        saveToken(res.accessToken);
+        saveUser(res.user);
+        router.push("/");
+      }
     } catch (err) {
-      setError((err as Error).message);
+      if ((err as Error).message === "2FA_REQUIRED") {
+        setStep("2FA");
+        setError(null);
+      } else {
+        setError((err as Error).message);
+      }
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-500 flex items-center justify-center overflow-hidden">
       {/* Animated grid background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#00ff9d08_1px,transparent_1px),linear-gradient(to_bottom,#00ff9d08_1px,transparent_1px)] bg-[size:40px_40px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#05966910_1px,transparent_1px),linear-gradient(to_bottom,#05966910_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#00ff9d08_1px,transparent_1px),linear-gradient(to_bottom,#00ff9d08_1px,transparent_1px)] bg-[size:40px_40px]" />
 
       {/* Radial glow center */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(0,255,157,0.06),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(5,150,105,0.06))] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(0,255,157,0.06),transparent)]" />
 
       {/* Floating particles */}
       {[...Array(12)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 bg-[#00ff9d] rounded-full opacity-30"
+          className="absolute w-1 h-1 bg-emerald-600 dark:bg-[#00ff9d] rounded-full opacity-30"
           style={{
             left: `${8 + i * 7.5}%`,
             top: `${15 + ((i * 17) % 70)}%`,
@@ -76,7 +93,7 @@ export default function LoginPage() {
       <motion.div
         animate={{ top: ["-2%", "102%"] }}
         transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00ff9d]/20 to-transparent pointer-events-none"
+        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-600/20 dark:via-[#00ff9d]/20 to-transparent pointer-events-none"
       />
 
       <motion.div
@@ -86,9 +103,9 @@ export default function LoginPage() {
         className="relative w-full max-w-md mx-4"
       >
         {/* Glow border effect */}
-        <div className="absolute -inset-[1px] bg-gradient-to-b from-[#00ff9d]/30 via-[#00ff9d]/5 to-transparent rounded-2xl blur-sm" />
+        <div className="absolute -inset-[1px] bg-gradient-to-b from-emerald-500/30 dark:from-[#00ff9d]/30 via-emerald-500/5 dark:via-[#00ff9d]/5 to-transparent rounded-2xl blur-sm" />
 
-        <div className="relative bg-[#0d0d0d]/95 backdrop-blur-xl border border-[#00ff9d]/15 rounded-2xl p-8 shadow-2xl">
+        <div className="relative bg-white/95 dark:bg-[#0d0d0d]/95 backdrop-blur-xl border border-slate-200 dark:border-[#00ff9d]/15 rounded-2xl p-8 shadow-xl dark:shadow-2xl">
           {/* Header */}
           <div className="flex flex-col items-center mb-8">
             <motion.div
@@ -102,23 +119,23 @@ export default function LoginPage() {
               transition={{ duration: 2, repeat: Infinity }}
               className="w-16 h-16 bg-[#00ff9d]/10 border border-[#00ff9d]/30 rounded-2xl flex items-center justify-center mb-4"
             >
-              <Dna className="w-8 h-8 text-[#00ff9d]" />
+              <Dna className="w-8 h-8 text-emerald-600 dark:text-[#00ff9d]" />
             </motion.div>
 
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
                 <Leaf className="w-4 h-4 text-[#FF6347]" />
-                <p className="text-[10px] font-mono text-gray-500 tracking-[0.35em] uppercase">
+                <p className="text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.35em] uppercase">
                   Sistema Neural Agrícola
                 </p>
               </div>
-              <h1 className="text-3xl font-black tracking-tighter text-white">
+              <h1 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
                 TOMATO
-                <span className="text-[#00ff9d] drop-shadow-[0_0_12px_rgba(0,255,157,0.6)]">
+                <span className="text-emerald-600 dark:text-[#00ff9d] drop-shadow-[0_0_12px_rgba(16,185,129,0.4)] dark:drop-shadow-[0_0_12px_rgba(0,255,157,0.6)]">
                   CODE
                 </span>
               </h1>
-              <p className="text-xs text-gray-500 font-mono mt-1 tracking-widest">
+              <p className="text-xs text-slate-500 dark:text-gray-500 font-mono mt-1 tracking-widest">
                 AUTENTICACIÓN · NIVEL 3
               </p>
             </div>
@@ -126,59 +143,90 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#00ff9d]/20" />
-            <span className="text-[10px] font-mono text-[#00ff9d]/50 tracking-widest">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-emerald-500/20 dark:to-[#00ff9d]/20" />
+            <span className="text-[10px] font-mono text-emerald-600 dark:text-[#00ff9d]/50 tracking-widest">
               ACCESO AUTORIZADO
             </span>
-            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#00ff9d]/20" />
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-emerald-500/20 dark:to-[#00ff9d]/20" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div className="group">
-              <label className="block text-[10px] font-mono text-gray-500 tracking-[0.2em] uppercase mb-2">
-                Identificador Neural (Email)
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="usuario@tomatocode.ai"
-                  className="w-full bg-[#111]/80 border border-white/10 text-white text-sm font-mono px-4 py-3 rounded-xl outline-none placeholder:text-gray-700 focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#00ff9d]/0 group-focus-within:bg-[#00ff9d] transition-colors shadow-[0_0_8px_rgba(0,255,157,0.6)]" />
-              </div>
-            </div>
+            {step === "CREDENTIALS" ? (
+              <>
+                {/* Email */}
+                <div className="group">
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
+                    Identificador Neural (Email)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="usuario@tomatocode.ai"
+                      className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm font-mono px-4 py-3 rounded-xl outline-none placeholder:text-slate-400 dark:text-gray-700 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#00ff9d]/0 group-focus-within:bg-emerald-500 dark:group-focus-within:bg-[#00ff9d] transition-colors shadow-[0_0_8px_rgba(16,185,129,0.4)] dark:shadow-[0_0_8px_rgba(0,255,157,0.6)]" />
+                  </div>
+                </div>
 
-            {/* Password */}
-            <div className="group">
-              <label className="block text-[10px] font-mono text-gray-500 tracking-[0.2em] uppercase mb-2">
-                Clave de Acceso
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••••••"
-                  className="w-full bg-[#111]/80 border border-white/10 text-white text-sm font-mono px-4 py-3 pr-12 rounded-xl outline-none placeholder:text-gray-600 focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#00ff9d] transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
+                {/* Password */}
+                <div className="group">
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
+                    Clave de Acceso
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="••••••••••••"
+                      className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm font-mono px-4 py-3 pr-12 rounded-xl outline-none placeholder:text-slate-500 dark:text-gray-600 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-600 hover:text-emerald-600 dark:text-[#00ff9d] transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                key="2fa-step"
+                className="group"
+              >
+                <div className="text-center mb-6">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Tu cuenta está protegida. Ingresa el código de 6 dígitos de tu aplicación de autenticador.
+                  </p>
+                </div>
+                <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.2em] uppercase mb-2">
+                  Código de Autenticación 2FA
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    required
+                    placeholder="000000"
+                    className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-center tracking-widest text-lg font-mono px-4 py-3 rounded-xl outline-none placeholder:text-slate-400 dark:text-gray-700 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
+                  />
+                </div>
+              </motion.div>
+            )}
 
             {/* Error */}
             <AnimatePresence>
@@ -187,10 +235,10 @@ export default function LoginPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 bg-[#ff003c]/10 border border-[#ff003c]/20 rounded-xl px-4 py-3"
+                  className="flex items-center gap-2 bg-red-500/10 dark:bg-[#ff003c]/10 border border-red-500/20 dark:border-[#ff003c]/20 rounded-xl px-4 py-3"
                 >
-                  <AlertCircle className="w-4 h-4 text-[#ff003c] flex-shrink-0" />
-                  <p className="text-xs text-[#ff003c] font-mono">{error}</p>
+                  <AlertCircle className="w-4 h-4 text-red-500 dark:text-[#ff003c] flex-shrink-0" />
+                  <p className="text-xs text-red-500 dark:text-[#ff003c] font-mono">{error}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -203,8 +251,8 @@ export default function LoginPage() {
               whileTap={{ scale: loading ? 1 : 0.98 }}
               className="relative w-full overflow-hidden group mt-2"
             >
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-[#00ff9d] to-emerald-400 rounded-xl opacity-70 group-hover:opacity-100 transition-opacity duration-300 blur-[2px]" />
-              <div className="relative w-full bg-[#0d0d0d] border border-[#00ff9d]/50 group-hover:border-[#00ff9d] rounded-xl px-6 py-3.5 flex items-center justify-center gap-3 font-black text-sm tracking-widest text-[#00ff9d] uppercase transition-all duration-300">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-emerald-500 dark:from-[#00ff9d] to-emerald-400 rounded-xl opacity-70 group-hover:opacity-100 transition-opacity duration-300 blur-[2px]" />
+              <div className="relative w-full bg-white dark:bg-[#0d0d0d] border border-[#00ff9d]/50 group-hover:border-emerald-500 dark:group-hover:border-[#00ff9d] rounded-xl px-6 py-3.5 flex items-center justify-center gap-3 font-black text-sm tracking-widest text-emerald-600 dark:text-[#00ff9d] uppercase transition-all duration-300">
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -213,7 +261,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     <span className="relative">
-                      INICIAR SESIÓN NEURAL
+                      {step === "CREDENTIALS" ? "INICIAR SESIÓN NEURAL" : "VERIFICAR CÓDIGO"}
                       {/* scan shimmer */}
                       <motion.span
                         animate={{ left: ["-100%", "200%"] }}
@@ -223,7 +271,7 @@ export default function LoginPage() {
                           ease: "linear",
                           repeatDelay: 1,
                         }}
-                        className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-[#00ff9d]/30 to-transparent skew-x-12"
+                        className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-emerald-500/30 dark:via-[#00ff9d]/30 to-transparent skew-x-12"
                       />
                     </span>
                   </>
@@ -234,11 +282,11 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="mt-6 text-center">
-            <p className="text-xs text-gray-600 font-mono">
+            <p className="text-xs text-slate-500 dark:text-gray-600 font-mono">
               ¿Sin acceso al sistema?{" "}
               <Link
                 href="/register"
-                className="text-[#00ff9d]/70 hover:text-[#00ff9d] transition-colors font-bold"
+                className="text-emerald-600 dark:text-[#00ff9d]/70 hover:text-emerald-600 dark:text-[#00ff9d] transition-colors font-bold"
               >
                 CREAR CUENTA
               </Link>
@@ -246,14 +294,14 @@ export default function LoginPage() {
           </div>
 
           {/* Status bar */}
-          <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+          <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff9d] animate-pulse shadow-[0_0_6px_rgba(0,255,157,0.8)]" />
-              <span className="text-[9px] font-mono text-gray-600 tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff9d] animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.5)] dark:shadow-[0_0_6px_rgba(0,255,157,0.8)]" />
+              <span className="text-[9px] font-mono text-slate-500 dark:text-gray-600 tracking-widest">
                 SISTEMA ACTIVO
               </span>
             </div>
-            <span className="text-[9px] font-mono text-gray-700 tracking-widest">
+            <span className="text-[9px] font-mono text-slate-400 dark:text-gray-700 tracking-widest">
               v4.2.1 // AUTH
             </span>
           </div>
