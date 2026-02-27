@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import React from "react";
 
 export async function generateRecipePDF(
@@ -21,11 +21,28 @@ export async function generateRecipePDF(
       format: "a4",
     });
 
-    const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfPageHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    const imgProps = pdf.getImageProperties(imgData);
+    const canvasWidth = imgProps.width;
+    const canvasHeight = imgProps.height;
+
+    const ratio = pdfWidth / canvasWidth;
+    const imgHeightInPdf = canvasHeight * ratio;
+
+    let heightLeft = imgHeightInPdf;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeightInPdf);
+    heightLeft -= pdfPageHeight;
+
+    while (heightLeft >= 0) {
+      position = position - pdfPageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeightInPdf);
+      heightLeft -= pdfPageHeight;
+    }
     pdf.save(filename);
   } catch (error) {
     console.error("Error al generar PDF:", error);

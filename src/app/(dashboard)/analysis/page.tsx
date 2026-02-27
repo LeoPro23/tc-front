@@ -309,19 +309,19 @@ export default function AnalysisPage() {
 
         const parsedDetections = Array.isArray(result.detections)
           ? result.detections.map(
-              (d: {
-                className?: string;
-                class?: string;
-                confidence: number;
-                box: [number, number, number, number];
-                model?: string | null;
-              }) => ({
-                pest: d.className ?? d.class ?? "desconocido",
-                confidence: Math.round(d.confidence * 100),
-                box: d.box,
-                model: d.model ?? "modelo_desconocido",
-              }),
-            )
+            (d: {
+              className?: string;
+              class?: string;
+              confidence: number;
+              box: [number, number, number, number];
+              model?: string | null;
+            }) => ({
+              pest: d.className ?? d.class ?? "desconocido",
+              confidence: Math.round(d.confidence * 100),
+              box: d.box,
+              model: d.model ?? "modelo_desconocido",
+            }),
+          )
           : [];
 
         const verified = result.verified !== false;
@@ -471,6 +471,7 @@ export default function AnalysisPage() {
           primaryDetection={primaryDetection}
           targetPest={selectedTargetPest}
           globalSummary={globalSummary}
+          imageEntries={imageEntries}
         />
       </div>
 

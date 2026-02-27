@@ -50,6 +50,7 @@ export interface ReportData {
   detection: Detection | null;
   recipe: AgronomicRecipe | null;
   date: string;
+  imageEntries: ImageAnalysisEntry[];
 }
 
 export interface ImageNaturalSize {

@@ -8,7 +8,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { AgronomicRecipe, Detection, User, ReportData } from "./types";
+import type { AgronomicRecipe, Detection, User, ReportData, ImageAnalysisEntry } from "./types";
 import { ReportTemplate } from "./ReportTemplate";
 import { generateRecipePDF } from "@/lib/pdf-export";
 import { getUser } from "@/lib/auth-helpers";
@@ -19,6 +19,7 @@ interface RecipeSidebarProps {
   primaryDetection: Detection | null;
   targetPest: string | null;
   globalSummary: string | null;
+  imageEntries: ImageAnalysisEntry[];
 }
 
 export function RecipeSidebar({
@@ -26,6 +27,7 @@ export function RecipeSidebar({
   primaryDetection,
   targetPest,
   globalSummary,
+  imageEntries,
 }: RecipeSidebarProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -67,6 +69,7 @@ export function RecipeSidebar({
       month: "long",
       day: "numeric",
     }),
+    imageEntries,
   };
 
   return (
