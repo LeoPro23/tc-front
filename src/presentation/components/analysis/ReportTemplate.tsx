@@ -20,6 +20,11 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
   containerRef,
 }) => {
   const { user, detection, recipe, date } = data;
+  const confidencePercent = detection
+    ? detection.confidence <= 1
+      ? detection.confidence * 100
+      : detection.confidence
+    : 0;
 
   return (
     <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
@@ -51,7 +56,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
               ID DE REPORTE
             </p>
             <p className="text-sm font-mono text-white/80">
-              #{Math.random().toString(36).substr(2, 9).toUpperCase()}
+              #{Math.random().toString(36).slice(2, 11).toUpperCase()}
             </p>
           </div>
         </div>
@@ -113,7 +118,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
                     {detection?.pest || "Ninguno"}
                   </p>
                   <span className="text-[10px] font-mono text-white/40">
-                    {(detection?.confidence || 0 * 100).toFixed(1)}% Confianza
+                    {confidencePercent.toFixed(1)}% Confianza
                   </span>
                 </div>
               </div>

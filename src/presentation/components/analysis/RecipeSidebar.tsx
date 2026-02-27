@@ -12,7 +12,7 @@ import type { AgronomicRecipe, Detection, User, ReportData } from "./types";
 import { ReportTemplate } from "./ReportTemplate";
 import { generateRecipePDF } from "@/lib/pdf-export";
 import { getUser } from "@/lib/auth-helpers";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 interface RecipeSidebarProps {
   recipe: AgronomicRecipe | null;

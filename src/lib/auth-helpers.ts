@@ -34,7 +34,13 @@ export function saveUser(user: object): void {
 export function getUser<T>(): T | null {
   if (typeof window !== "undefined") {
     const raw = localStorage.getItem(USER_KEY);
-    if (raw) return JSON.parse(raw) as T;
+    if (raw) {
+      try {
+        return JSON.parse(raw) as T;
+      } catch {
+        localStorage.removeItem(USER_KEY);
+      }
+    }
   }
   return null;
 }
