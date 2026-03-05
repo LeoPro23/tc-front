@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/presentation/components/ThemeProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TomatoCode AI — Acceso",
+  title: "PlagaCode AI — Acceso",
   description: "Plataforma IA Agrícola de Detección de Plagas",
 };
 

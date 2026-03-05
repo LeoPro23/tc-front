@@ -164,7 +164,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      placeholder="usuario@tomatocode.ai"
+                      placeholder="usuario@plagacode.ai"
                       className="w-full bg-slate-100/80 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm font-mono px-4 py-3 rounded-xl outline-none placeholder:text-slate-400 dark:text-gray-700 focus:border-emerald-500/50 dark:focus:border-[#00ff9d]/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_rgba(0,255,157,0.1)] transition-all duration-300"
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#00ff9d]/0 group-focus-within:bg-emerald-500 dark:group-focus-within:bg-[#00ff9d] transition-colors shadow-[0_0_8px_rgba(16,185,129,0.4)] dark:shadow-[0_0_8px_rgba(0,255,157,0.6)]" />

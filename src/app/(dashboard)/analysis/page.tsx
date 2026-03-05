@@ -336,7 +336,7 @@ export default function AnalysisPage() {
     setGlobalBatchInterpretation(null);
     setError(null);
 
-    addLog("[SISTEMA] ACCEDIENDO AL NUCLEO NEURONAL TOMATOCODE...");
+    addLog("[SISTEMA] ACCEDIENDO AL NUCLEO NEURONAL PLAGACODE...");
     await new Promise((r) => setTimeout(r, 600));
     addLog("[BUFFER] AISLANDO CAMAS DE BIOMASA...");
     await new Promise((r) => setTimeout(r, 400));

@@ -78,7 +78,7 @@ export default function Dashboard() {
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tighter flex items-center gap-2">
-              TOMATOCODE{" "}
+              PLAGACODE{" "}
               <span className="text-emerald-600 dark:text-[#00ff9d] dark:drop-shadow-[0_0_8px_rgba(0,255,157,0.5)]">
                 AI
               </span>

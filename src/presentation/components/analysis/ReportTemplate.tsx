@@ -242,7 +242,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse shadow-[0_0_10px_#00ff9d]" />
             <span className="text-[9px] font-mono text-gray-500 tracking-widest uppercase">
-              Verified by TomatoCode Core v4.2.1-LTS
+              Verified by PlagaCode Core v4.2.1-LTS
             </span>
           </div>
           <div className="flex gap-4">

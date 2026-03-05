@@ -83,7 +83,7 @@ export default function RegisterPage() {
       id: "email",
       label: "Identificador Neural (Email)",
       type: "email",
-      placeholder: "usuario@tomatocode.ai",
+      placeholder: "usuario@plagacode.ai",
       value: form.email,
       onChange: set("email"),
       showToggle: false,

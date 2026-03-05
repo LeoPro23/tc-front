@@ -4,7 +4,7 @@ import React from "react";
 
 export async function generateRecipePDF(
   element: HTMLElement,
-  filename: string = "reporte-tomatocode.pdf",
+  filename: string = "reporte-plagacode.pdf",
 ): Promise<void> {
   try {
     const canvas = await html2canvas(element, {
