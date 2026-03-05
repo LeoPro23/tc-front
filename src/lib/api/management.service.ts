@@ -78,5 +78,10 @@ export const managementApi = {
 
         const res = await axios.get(`${API_URL}/analysis-field-campaigns/history?${queryParams.toString()}`, { headers: getHeaders() });
         return res.data;
-    }
-};
+      },
+
+      getScanDetails: async (id: string): Promise<import('./management.types').AnalysisFieldCampaignHistory> => {
+          const res = await axios.get(`${API_URL}/analysis-field-campaigns/${id}`, { headers: getHeaders() });
+          return res.data;
+      }
+  };

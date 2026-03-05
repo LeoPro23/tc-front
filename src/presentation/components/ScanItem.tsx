@@ -1,4 +1,5 @@
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import Link from "next/link";
 
 interface ScanItemProps {
   id: string;
@@ -10,6 +11,7 @@ interface ScanItemProps {
 }
 
 export function ScanItem({
+  id,
   image,
   status,
   pest,
@@ -17,7 +19,8 @@ export function ScanItem({
   timestamp,
 }: ScanItemProps) {
   return (
-    <div className="group relative flex items-center gap-4 p-4 bg-white dark:bg-white/5 dark:backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/5 hover:border-emerald-400 dark:hover:border-[#00ff9d]/30 transition-all duration-300 overflow-hidden shadow-sm dark:shadow-none">
+    <Link href={`/scan-history/${id}`} className="block">
+      <div className="group relative flex items-center gap-4 p-4 bg-white dark:bg-white/5 dark:backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/5 hover:border-emerald-400 dark:hover:border-[#00ff9d]/30 transition-all duration-300 overflow-hidden shadow-sm dark:shadow-none">
       {/* Background glow on hover */}
       <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 dark:from-[#00ff9d]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -69,5 +72,6 @@ export function ScanItem({
         </div>
       </div>
     </div>
+    </Link>
   );
 }
