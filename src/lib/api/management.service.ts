@@ -33,8 +33,12 @@ export const managementApi = {
         const res = await axios.get(`${API_URL}/fields`, { headers: getHeaders() });
         return res.data;
     },
-    createField: async (name: string): Promise<Field> => {
-        const res = await axios.post(`${API_URL}/fields`, { name }, { headers: getHeaders() });
+    createField: async (name: string, irrigationType?: string): Promise<Field> => {
+        const res = await axios.post(`${API_URL}/fields`, { name, irrigationType }, { headers: getHeaders() });
+        return res.data;
+    },
+    updateField: async (id: string, data: { name?: string; irrigationType?: string }): Promise<Field> => {
+        const res = await axios.patch(`${API_URL}/fields/${id}`, data, { headers: getHeaders() });
         return res.data;
     },
 

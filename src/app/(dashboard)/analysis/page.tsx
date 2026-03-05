@@ -191,6 +191,13 @@ export default function AnalysisPage() {
   const [selectedFieldCampaignId, setSelectedFieldCampaignId] = useState<string>("");
   const [isManagementLoading, setIsManagementLoading] = useState(true);
 
+  // Contexto Agronómico (pre-análisis)
+  const [phenologicalState, setPhenologicalState] = useState("");
+  const [soilQuality, setSoilQuality] = useState("");
+  const [currentClimate, setCurrentClimate] = useState("");
+
+  const [isReadyForAnalysis, setIsReadyForAnalysis] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageEntriesRef = useRef<ImageAnalysisEntry[]>([]);
 
@@ -252,8 +259,10 @@ export default function AnalysisPage() {
     } else {
       setEnrolledFields([]);
     }
+    // Si cambia la campana (o el campo) reseteamos ready state
+    setIsReadyForAnalysis(false);
     return () => { active = false; };
-  }, [selectedCampaignId]);
+  }, [selectedCampaignId, selectedFieldCampaignId]);
 
   const addLog = (msg: string) => {
     setScanLogs((prev) => [...prev.slice(-4), msg]);
@@ -339,6 +348,9 @@ export default function AnalysisPage() {
       formData.append("files", entry.file, entry.file.name);
     });
     formData.append("fieldCampaignId", selectedFieldCampaignId);
+    if (phenologicalState.trim()) formData.append("phenologicalState", phenologicalState.trim());
+    if (soilQuality.trim()) formData.append("soilQuality", soilQuality.trim());
+    if (currentClimate.trim()) formData.append("currentClimate", currentClimate.trim());
 
     try {
       const token = getToken();
@@ -481,8 +493,6 @@ export default function AnalysisPage() {
       ? "Las firmas neurales indican colonizacion activa de patogenos. Se recomienda mitigacion inmediata."
       : "Escaneo completo sin hallazgos de alta prioridad. Mantener vigilancia rutinaria.");
 
-  const isReadyForAnalysis = selectedCampaignId && selectedFieldCampaignId;
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white p-6 font-sans transition-colors duration-300">
       <AnalysisHeader />
@@ -562,6 +572,64 @@ export default function AnalysisPage() {
                         ))}
                       </select>
                     )}
+                  </div>
+                )}
+
+                {/* Contexto Agronómico */}
+                {selectedFieldCampaignId && (
+                  <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-white/10">
+                    <label className="block text-xs font-mono text-gray-500 uppercase mb-1">
+                      3. Contexto Agronómico (opcional, mejora recomendaciones IA)
+                    </label>
+                    <div>
+                      <label className="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">Estado Fenológico</label>
+                      <select
+                        value={phenologicalState}
+                        onChange={(e) => setPhenologicalState(e.target.value)}
+                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none dark:text-white"
+                      >
+                        <option value="">-- Sin especificar --</option>
+                        <option value="Germinación">Germinación</option>
+                        <option value="Plántula">Plántula</option>
+                        <option value="Vegetativo">Vegetativo</option>
+                        <option value="Floración">Floración</option>
+                        <option value="Fructificación">Fructificación</option>
+                        <option value="Maduración">Maduración</option>
+                        <option value="Cosecha">Cosecha</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">Calidad del Suelo Actual</label>
+                      <textarea
+                        value={soilQuality}
+                        onChange={(e) => setSoilQuality(e.target.value)}
+                        placeholder="Ej. Suelo franco-arcilloso, pH 6.5, buena retención de humedad"
+                        rows={2}
+                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">Clima Actual</label>
+                      <textarea
+                        value={currentClimate}
+                        onChange={(e) => setCurrentClimate(e.target.value)}
+                        placeholder="Ej. Temp. 28°C, humedad relativa 75%, lluvias intermitentes"
+                        rows={2}
+                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none dark:text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Confirmación */}
+                {selectedFieldCampaignId && (
+                  <div className="pt-4 flex justify-end">
+                    <button
+                      onClick={() => setIsReadyForAnalysis(true)}
+                      className="px-6 py-3 bg-emerald-600 dark:bg-[#00ff9d] text-white dark:text-black font-bold text-sm rounded-xl hover:bg-emerald-700 dark:hover:bg-[#00cc7d] transition-colors shadow-lg shadow-emerald-500/20 dark:shadow-[#00ff9d]/20"
+                    >
+                      Confirmar Configuración y Continuar
+                    </button>
                   </div>
                 )}
               </div>
@@ -665,6 +733,6 @@ export default function AnalysisPage() {
       </div>
 
       <AnalysisErrorBanner error={error} onClose={() => setError(null)} />
-    </div>
+    </div >
   );
 }

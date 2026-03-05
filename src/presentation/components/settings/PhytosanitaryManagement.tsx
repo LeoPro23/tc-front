@@ -26,6 +26,7 @@ export function PhytosanitaryManagement() {
     const [newCampaignStart, setNewCampaignStart] = useState("");
     const [newCampaignEnd, setNewCampaignEnd] = useState("");
     const [newFieldName, setNewFieldName] = useState("");
+    const [newFieldIrrigation, setNewFieldIrrigation] = useState("");
 
     const [enrollCampaignId, setEnrollCampaignId] = useState("");
     const [enrollFieldId, setEnrollFieldId] = useState("");
@@ -34,6 +35,12 @@ export function PhytosanitaryManagement() {
     // Modal de Edición de Campaña
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [campaignToEdit, setCampaignToEdit] = useState<Campaign | null>(null);
+
+    // Edición de Campos
+    const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+    const [editFieldName, setEditFieldName] = useState("");
+    const [editFieldIrrigation, setEditFieldIrrigation] = useState("");
+    const [isSavingField, setIsSavingField] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -105,14 +112,39 @@ export function PhytosanitaryManagement() {
         }
         setIsCreatingField(true);
         try {
-            const f = await managementApi.createField(newFieldName.trim());
+            const f = await managementApi.createField(newFieldName.trim(), newFieldIrrigation.trim() || undefined);
             setFields(prev => [f, ...prev]);
             setNewFieldName("");
+            setNewFieldIrrigation("");
             toast.success("Campo registrado correctamente");
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Error al guardar campo");
         } finally {
             setIsCreatingField(false);
+        }
+    };
+
+    const handleEditField = (f: Field) => {
+        setEditingFieldId(f.id);
+        setEditFieldName(f.name);
+        setEditFieldIrrigation(f.irrigationType || "");
+    };
+
+    const handleSaveField = async () => {
+        if (!editingFieldId || !editFieldName.trim()) return;
+        setIsSavingField(true);
+        try {
+            const updated = await managementApi.updateField(editingFieldId, {
+                name: editFieldName.trim(),
+                irrigationType: editFieldIrrigation.trim() || undefined,
+            });
+            setFields(prev => prev.map(f => f.id === editingFieldId ? updated : f));
+            setEditingFieldId(null);
+            toast.success("Campo actualizado correctamente");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Error al actualizar campo");
+        } finally {
+            setIsSavingField(false);
         }
     };
 
@@ -249,6 +281,10 @@ export function PhytosanitaryManagement() {
                                 <label className="block text-xs font-medium text-slate-500 mb-1">Identificador o Nombre del Campo</label>
                                 <input type="text" placeholder="Ej. Lote Norte, Casilla 4B" required value={newFieldName} onChange={e => setNewFieldName(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white" />
                             </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Descripción del Tipo de Riego (opcional)</label>
+                                <input type="text" placeholder="Ej. Riego por goteo, Aspersión, Gravedad" value={newFieldIrrigation} onChange={e => setNewFieldIrrigation(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white" />
+                            </div>
                             <button type="submit" disabled={isCreatingField} className="px-4 py-2 bg-emerald-600 dark:bg-[#00ff9d] text-white dark:text-black font-bold text-xs rounded-lg flex items-center gap-2 disabled:opacity-50">
                                 {isCreatingField ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />} Registrar Campo
                             </button>
@@ -259,9 +295,38 @@ export function PhytosanitaryManagement() {
                             {fields.length === 0 ? <p className="text-sm text-slate-500">No hay campos base registrados.</p> : (
                                 <ul className="space-y-2">
                                     {fields.map(f => (
-                                        <li key={f.id} className="p-3 bg-white dark:bg-[#181818] border border-slate-200 dark:border-white/10 rounded-lg flex justify-between items-center text-sm">
-                                            <span className="font-medium text-slate-900 dark:text-white">{f.name}</span>
-                                            <span className="text-slate-400 text-xs">Añadido: {formatLocalDate(f.createdAt)}</span>
+                                        <li key={f.id} className="p-3 bg-white dark:bg-[#181818] border border-slate-200 dark:border-white/10 rounded-lg text-sm">
+                                            {editingFieldId === f.id ? (
+                                                <div className="space-y-2">
+                                                    <input type="text" value={editFieldName} onChange={e => setEditFieldName(e.target.value)} className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white" placeholder="Nombre del campo" />
+                                                    <input type="text" value={editFieldIrrigation} onChange={e => setEditFieldIrrigation(e.target.value)} className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white" placeholder="Tipo de riego" />
+                                                    <div className="flex gap-2">
+                                                        <button onClick={handleSaveField} disabled={isSavingField} className="px-3 py-1 bg-emerald-600 dark:bg-[#00ff9d] text-white dark:text-black font-bold text-xs rounded-lg disabled:opacity-50">
+                                                            {isSavingField ? <Loader2 className="w-3 h-3 animate-spin" /> : "Guardar"}
+                                                        </button>
+                                                        <button onClick={() => setEditingFieldId(null)} className="px-3 py-1 bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-gray-300 text-xs rounded-lg">
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex justify-between items-center">
+                                                    <div>
+                                                        <span className="font-medium text-slate-900 dark:text-white">{f.name}</span>
+                                                        {f.irrigationType && (
+                                                            <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                                                                {f.irrigationType}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-slate-400 text-xs">Añadido: {formatLocalDate(f.createdAt)}</span>
+                                                        <button onClick={() => handleEditField(f)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" title="Editar Campo">
+                                                            <Pencil className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

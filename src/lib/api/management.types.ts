@@ -9,6 +9,7 @@ export interface Campaign {
 export interface Field {
     id: string;
     name: string;
+    irrigationType?: string;
     location?: string;
     createdAt: string;
 }
