@@ -17,6 +17,9 @@ import {
   type PerImageInterpretation,
 } from "@/presentation/components/analysis";
 import { URL_BACKEND } from "@/shared/config/backend-url";
+import { managementApi } from "@/lib/api/management.service";
+import type { Campaign, Field, FieldCampaign } from "@/lib/api/management.types";
+import { getToken } from "@/lib/auth-helpers";
 
 function asText(value: unknown): string | null {
   if (typeof value !== "string") {
@@ -34,19 +37,19 @@ function parsePerImageInterpretation(value: unknown): PerImageInterpretation | n
 
   const item = value as Record<string, unknown>;
   const filename = asText(item.filename);
-  const targetPest = asText(item.targetPest ?? item.target_pest);
+  if (!filename) return null;
+
+  const targetPest = asText(item.targetPest ?? item.target_pest) ?? "Sin plaga detectada";
   const recipeRaw = item.recipe as Record<string, unknown> | undefined;
   const biosecurityRaw = item.biosecurity as Record<string, unknown> | undefined;
 
-  const product = asText(recipeRaw?.product);
-  const dose = asText(recipeRaw?.dose);
-  const method = asText(recipeRaw?.method);
-  const status = asText(biosecurityRaw?.status);
-  const protocol = asText(biosecurityRaw?.protocol);
+  const product = asText(recipeRaw?.product) ?? "No definido";
+  const dose = asText(recipeRaw?.dose) ?? "No definido";
+  const method = asText(recipeRaw?.method) ?? "No definido";
 
-  if (!filename || !targetPest || !product || !dose || !method || !status || !protocol) {
-    return null;
-  }
+  // Accept both nested (biosecurity.status) and flat (biosecurityStatus) formats
+  const status = asText(biosecurityRaw?.status) ?? asText(item.biosecurityStatus) ?? "VIGILANCIA";
+  const protocol = asText(biosecurityRaw?.protocol) ?? asText(item.biosecurityProtocol) ?? "Protocolo estándar.";
 
   return {
     filename,
@@ -72,6 +75,11 @@ function parseBatchInterpretation(value: unknown): BatchInterpretation | null {
     return null;
   }
 
+  const generalRecommendation = asText(raw.generalRecommendation ?? raw.general_recommendation) ?? "Sin recomendaciones específicas del lote.";
+  const generalProduct = asText(raw.generalProduct ?? raw.general_product) ?? "No definido.";
+  const generalOperativeGuide = asText(raw.generalOperativeGuide ?? raw.general_operative_guide) ?? "Monitoreo rutinario.";
+  const generalBiosecurityProtocol = asText(raw.generalBiosecurityProtocol ?? raw.general_biosecurity_protocol) ?? "Protocolo estándar.";
+
   const perImageArray = Array.isArray(raw.perImage)
     ? raw.perImage
     : Array.isArray(raw.per_image)
@@ -84,6 +92,10 @@ function parseBatchInterpretation(value: unknown): BatchInterpretation | null {
 
   return {
     generalSummary,
+    generalRecommendation,
+    generalProduct,
+    generalOperativeGuide,
+    generalBiosecurityProtocol,
     perImage,
   };
 }
@@ -168,7 +180,16 @@ export default function AnalysisPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [globalSummary, setGlobalSummary] = useState<string | null>(null);
+  const [globalBatchInterpretation, setGlobalBatchInterpretation] = useState<BatchInterpretation | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados de Pre-Seleccion (Campaign y Field)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
+  const [fields, setFields] = useState<Field[]>([]);
+  const [enrolledFields, setEnrolledFields] = useState<FieldCampaign[]>([]);
+  const [selectedFieldCampaignId, setSelectedFieldCampaignId] = useState<string>("");
+  const [isManagementLoading, setIsManagementLoading] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageEntriesRef = useRef<ImageAnalysisEntry[]>([]);
@@ -197,6 +218,42 @@ export default function AnalysisPage() {
       imageEntriesRef.current.forEach((entry) => URL.revokeObjectURL(entry.previewUrl));
     };
   }, []);
+
+  // UseEffect para fetchear Campanas 
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        setIsManagementLoading(true);
+        const fetchedCampaigns = await managementApi.getCampaigns();
+        const fetchedFields = await managementApi.getFields();
+        if (active) {
+          setCampaigns(fetchedCampaigns);
+          setFields(fetchedFields);
+        }
+      } catch (err) {
+        console.error("Error cargando campañas y campos", err);
+      } finally {
+        if (active) setIsManagementLoading(false);
+      }
+    })();
+    return () => { active = false; }
+  }, []);
+
+  // Lógica interactiva cuando se elige/cambia Campana
+  useEffect(() => {
+    let active = true;
+    if (selectedCampaignId) {
+      managementApi.getEnrolledFields(selectedCampaignId)
+        .then(res => {
+          if (active) setEnrolledFields(res);
+        })
+        .catch(err => console.error("Error obteniendo enrolled fields", err));
+    } else {
+      setEnrolledFields([]);
+    }
+    return () => { active = false; };
+  }, [selectedCampaignId]);
 
   const addLog = (msg: string) => {
     setScanLogs((prev) => [...prev.slice(-4), msg]);
@@ -267,6 +324,7 @@ export default function AnalysisPage() {
     );
     setSelectedModels([]);
     setGlobalSummary(null);
+    setGlobalBatchInterpretation(null);
     setError(null);
 
     addLog("[SISTEMA] ACCEDIENDO AL NUCLEO NEURONAL TOMATOCODE...");
@@ -280,10 +338,15 @@ export default function AnalysisPage() {
     entries.forEach((entry) => {
       formData.append("files", entry.file, entry.file.name);
     });
+    formData.append("fieldCampaignId", selectedFieldCampaignId);
 
     try {
+      const token = getToken();
       const response = await fetch(`${URL_BACKEND}/pests/analyze/batch`, {
         method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: formData,
       });
 
@@ -359,6 +422,7 @@ export default function AnalysisPage() {
 
       setImageEntries(parsedEntries);
       setGlobalSummary(interpretation?.generalSummary ?? buildFallbackGeneralSummary(parsedEntries));
+      setGlobalBatchInterpretation(interpretation ?? null);
 
       const totalDetections = parsedEntries.reduce((sum, entry) => sum + entry.detections.length, 0);
       const totalModels = parsedEntries.reduce((sum, entry) => sum + entry.models.length, 0);
@@ -417,62 +481,187 @@ export default function AnalysisPage() {
       ? "Las firmas neurales indican colonizacion activa de patogenos. Se recomienda mitigacion inmediata."
       : "Escaneo completo sin hallazgos de alta prioridad. Mantener vigilancia rutinaria.");
 
+  const isReadyForAnalysis = selectedCampaignId && selectedFieldCampaignId;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white p-6 font-sans transition-colors duration-300">
       <AnalysisHeader />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
-        <main className="lg:col-span-8 flex flex-col gap-6">
-          <ModelFilterTabs
-            modelNames={modelNames}
-            selectedModels={selectedModels}
-            activeFilterLabel={activeFilterLabel}
-            onSelectAll={() => setSelectedModels([])}
-            onToggleModel={toggleModel}
-          />
+        {!isReadyForAnalysis && (
+          <div className="lg:col-span-12 flex flex-col items-center justify-center min-h-[50vh]">
+            <div className="bg-white dark:bg-white/5 p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg w-full max-w-lg">
+              <h2 className="text-xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100 uppercase tracking-wide">
+                Configuración del Lote
+              </h2>
 
-          <ImageBatchTabs
-            imageEntries={imageEntries}
-            selectedImageIndex={selectedImageIndex}
-            onSelectImage={setSelectedImageIndex}
-          />
+              <div className="space-y-6">
+                {/* Seleccion de Campana */}
+                <div>
+                  <label className="block text-xs font-mono text-gray-500 uppercase mb-2">
+                    1. Seleccione Campaña
+                  </label>
+                  {isManagementLoading ? (
+                    <div className="animate-pulse h-10 bg-gray-200 dark:bg-white/10 rounded-xl" />
+                  ) : campaigns.length === 0 ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="p-4 bg-orange-50 dark:bg-orange-500/10 border-l-4 border-orange-500 rounded text-sm text-orange-700 dark:text-orange-300">
+                        No dispone de campañas activas. Vaya al mantenedor de Campañas para crear una.
+                      </div>
+                      <a href="/settings" className="w-auto px-4 py-2 border border-[#ff003c] text-[#ff003c] text-xs font-bold rounded-lg hover:bg-[#ff003c] hover:text-white transition-colors self-start text-center">
+                        Crear Campaña en Ajustes
+                      </a>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedCampaignId}
+                      onChange={(e) => {
+                        setSelectedCampaignId(e.target.value);
+                        setSelectedFieldCampaignId(""); // reset
+                      }}
+                      className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all dark:text-white"
+                    >
+                      <option value="" disabled>-- Escoja una campaña --</option>
+                      {campaigns.map(c => (
+                        <option key={c.id} value={c.id}>
+                          Instancia de Producción (Inicio: {new Date(c.startDate).toLocaleDateString()}) ID: {c.id.split('-')[0]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
 
-          <AnalysisCanvasPanel
-            selectedImage={selectedImage}
-            selectedEntry={selectedEntry}
-            detections={detections}
-            filteredDetections={filteredDetections}
-            isScanning={isScanning}
-            scanLogs={scanLogs}
-            imageEntriesCount={imageEntries.length}
-            fileInputRef={fileInputRef}
-            onUploadChange={handleImageUpload}
-            onClearImageEntries={clearImageEntries}
-            onReprocess={() => {
-              if (imageEntries.length > 0) {
-                void performRealAnalysis(imageEntries);
-              }
-            }}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PredictionMetadataCard
-              modelNames={modelNames}
-              activeFilterLabel={activeFilterLabel}
-              selectedEntry={selectedEntry}
-              filteredDetections={filteredDetections}
-            />
-            <BiosecurityCard status={selectedBiosecurityStatus} protocol={selectedBiosecurityProtocol} />
+                {/* Seleccion de Campo Inscrito */}
+                {selectedCampaignId && (
+                  <div>
+                    <label className="block text-xs font-mono text-gray-500 uppercase mb-2">
+                      2. Seleccione Campo a Escanear
+                    </label>
+                    {isManagementLoading ? (
+                      <div className="animate-pulse h-10 bg-gray-200 dark:bg-white/10 rounded-xl" />
+                    ) : enrolledFields.length === 0 ? (
+                      <div className="flex flex-col gap-3">
+                        <div className="p-4 bg-orange-50 dark:bg-orange-500/10 border-l-4 border-orange-500 rounded text-sm text-orange-700 dark:text-orange-300">
+                          No hay campos inscritos en esta campaña. Vaya al mantenedor o inscriba uno.
+                        </div>
+                        <a href="/settings" className="w-auto px-4 py-2 border border-[#00ff9d] text-[#00ff9d] text-xs font-bold rounded-lg hover:bg-[#00ff9d] hover:text-black transition-colors self-start text-center">
+                          Inscribir Campo en Ajustes
+                        </a>
+                      </div>
+                    ) : (
+                      <select
+                        value={selectedFieldCampaignId}
+                        onChange={(e) => setSelectedFieldCampaignId(e.target.value)}
+                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#ff003c] outline-none transition-all dark:text-white"
+                      >
+                        <option value="" disabled>-- Escoja el campo inscrito --</option>
+                        {enrolledFields.map(ef => (
+                          <option key={ef.id} value={ef.id}>
+                            {ef.field.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </main>
+        )}
 
-        <RecipeSidebar
-          recipe={selectedRecipe}
-          primaryDetection={primaryDetection}
-          targetPest={selectedTargetPest}
-          globalSummary={globalSummary}
-          imageEntries={imageEntries}
-        />
+        {isReadyForAnalysis && (
+          <>
+            {/* === SECCIÓN FULL-WIDTH (12 cols) === */}
+            {/* Resumen General del Lote */}
+            {globalBatchInterpretation && globalSummary && (
+              <div className="lg:col-span-12 p-6 rounded-3xl border border-emerald-300/30 bg-emerald-50/80 dark:bg-[#00ff9d]/5 dark:border-[#00ff9d]/20">
+                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-700 dark:text-[#00ff9d] mb-2 font-bold">
+                  Resumen General del Lote
+                </p>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200 mb-4">{globalSummary}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
+                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Recomendacion General</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200">{globalBatchInterpretation.generalRecommendation}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
+                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Producto General</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200 font-bold">{globalBatchInterpretation.generalProduct}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
+                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Guia Operativa Global</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200 italic">{globalBatchInterpretation.generalOperativeGuide}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-red-200/50 dark:border-red-800/30">
+                    <p className="text-[9px] font-mono uppercase text-red-600 dark:text-red-400 mb-1">Protocolo Bioseguridad del Lote</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200 italic">{globalBatchInterpretation.generalBiosecurityProtocol}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Filtro de Modelos - full width */}
+            <div className="lg:col-span-12">
+              <ModelFilterTabs
+                modelNames={modelNames}
+                selectedModels={selectedModels}
+                activeFilterLabel={activeFilterLabel}
+                onSelectAll={() => setSelectedModels([])}
+                onToggleModel={toggleModel}
+              />
+            </div>
+
+            {/* Lote de Imagenes - full width */}
+            <div className="lg:col-span-12">
+              <ImageBatchTabs
+                imageEntries={imageEntries}
+                selectedImageIndex={selectedImageIndex}
+                onSelectImage={setSelectedImageIndex}
+              />
+            </div>
+
+            {/* === SECCIÓN DIVIDIDA: Canvas (8 cols) + Sidebar (4 cols) === */}
+            <main className="lg:col-span-8 flex flex-col gap-6">
+              <AnalysisCanvasPanel
+                selectedImage={selectedImage}
+                selectedEntry={selectedEntry}
+                detections={detections}
+                filteredDetections={filteredDetections}
+                isScanning={isScanning}
+                scanLogs={scanLogs}
+                imageEntriesCount={imageEntries.length}
+                fileInputRef={fileInputRef}
+                onUploadChange={handleImageUpload}
+                onClearImageEntries={clearImageEntries}
+                onReprocess={() => {
+                  if (imageEntries.length > 0) {
+                    void performRealAnalysis(imageEntries);
+                  }
+                }}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <PredictionMetadataCard
+                  modelNames={modelNames}
+                  activeFilterLabel={activeFilterLabel}
+                  selectedEntry={selectedEntry}
+                  filteredDetections={filteredDetections}
+                />
+                <BiosecurityCard
+                  status={selectedBiosecurityStatus}
+                  protocol={selectedBiosecurityProtocol}
+                />
+              </div>
+            </main>
+
+            <RecipeSidebar
+              recipe={selectedRecipe}
+              primaryDetection={primaryDetection}
+              targetPest={selectedTargetPest}
+              imageEntries={imageEntries}
+            />
+          </>
+        )}
       </div>
 
       <AnalysisErrorBanner error={error} onClose={() => setError(null)} />

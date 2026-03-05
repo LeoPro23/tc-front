@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { getUser, saveUser, getToken } from "@/lib/auth-helpers";
 import { getProfile, updateProfile, changePassword, toggle2Fa, getConnectedDevices, generate2FaSecret, verify2Fa, revokeDevice } from "@/data/profile";
 import toast from "react-hot-toast";
+import { PhytosanitaryManagement } from "@/presentation/components/settings/PhytosanitaryManagement";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
@@ -361,6 +362,18 @@ export default function SettingsPage() {
                             />
                         </button>
                     </div>
+                </div>
+
+                {/* Phytosanitary Management (Plantas, Campañas y Relaciones) */}
+                <div className="bg-white dark:bg-[#0d0d0d] rounded-xl p-6 shadow-sm border border-slate-200 dark:border-white/10">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <Globe className="w-5 h-5 text-emerald-600 dark:text-[#00ff9d]" />
+                        Configuración de Campañas y Lotes Fitosanitarios
+                    </h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                        Administra y asigna las campañas activas o caducadas a tus zonas agrícolas. Debes inscribirlas antes de realizar un Análisis Neural.
+                    </p>
+                    <PhytosanitaryManagement />
                 </div>
             </div>
 

@@ -35,6 +35,10 @@ export interface PerImageInterpretation {
 
 export interface BatchInterpretation {
   generalSummary: string;
+  generalRecommendation: string;
+  generalProduct: string;
+  generalOperativeGuide: string;
+  generalBiosecurityProtocol: string;
   perImage: PerImageInterpretation[];
 }
 

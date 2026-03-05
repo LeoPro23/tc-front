@@ -8,7 +8,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { AgronomicRecipe, Detection, User, ReportData, ImageAnalysisEntry } from "./types";
+import type { AgronomicRecipe, Detection, User, ReportData, ImageAnalysisEntry, BatchInterpretation } from "./types";
 import { ReportTemplate } from "./ReportTemplate";
 import { generateRecipePDF } from "@/lib/pdf-export";
 import { getUser } from "@/lib/auth-helpers";
@@ -18,7 +18,6 @@ interface RecipeSidebarProps {
   recipe: AgronomicRecipe | null;
   primaryDetection: Detection | null;
   targetPest: string | null;
-  globalSummary: string | null;
   imageEntries: ImageAnalysisEntry[];
 }
 
@@ -26,7 +25,6 @@ export function RecipeSidebar({
   recipe,
   primaryDetection,
   targetPest,
-  globalSummary,
   imageEntries,
 }: RecipeSidebarProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -82,15 +80,6 @@ export function RecipeSidebar({
           <span className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full"></span>
           REGISTRO AGRI-RECETA
         </h2>
-        {globalSummary && (
-          <div className="mb-6 p-4 rounded-2xl border border-emerald-300/30 bg-emerald-50/80 dark:bg-[#00ff9d]/10">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-700 dark:text-[#00ff9d] mb-1">
-              Resumen General del Lote
-            </p>
-            <p className="text-[11px] leading-relaxed text-gray-700 dark:text-gray-200">{globalSummary}</p>
-          </div>
-        )}
-
         <AnimatePresence mode="wait">
           {recipe ? (
             <motion.div
