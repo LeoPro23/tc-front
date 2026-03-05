@@ -11,7 +11,7 @@ export async function getProfile() {
     return res.json();
 }
 
-export async function updateProfile(data: { name?: string; email?: string; farmName?: string }) {
+export async function updateProfile(data: { name?: string; email?: string; farmName?: string; phoneCountry?: string; phoneNumber?: string }) {
     const token = getToken();
     const res = await fetch(`${URL_BACKEND}/auth/profile`, {
         method: 'POST',

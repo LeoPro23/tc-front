@@ -20,3 +20,31 @@ export interface FieldCampaign {
     campaign: Campaign;
     createdAt: string;
 }
+
+export interface AttachedImage {
+    id: string;
+    url: string;
+    fileName: string;
+    imageRecommendation?: string;
+    recommendedProduct?: string;
+    operativeGuide?: string;
+    biosecurityProtocol?: string;
+}
+
+export interface AnalysisFieldCampaignHistory {
+    id: string;
+    date: string;
+    generalSummary?: string;
+    generalRecommendation?: string;
+    recommendedProduct?: string;
+    operativeGuide?: string;
+    biosecurityProtocol?: string;
+    phenologicalState?: string;
+    soilQuality?: string;
+    currentClimate?: string;
+    isInfected: boolean;
+    primaryTargetPest?: string;
+    maxConfidence?: number;
+    fieldCampaign: FieldCampaign;
+    attachedImages: AttachedImage[];
+}

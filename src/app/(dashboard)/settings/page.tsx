@@ -7,6 +7,7 @@ import { getUser, saveUser, getToken } from "@/lib/auth-helpers";
 import { getProfile, updateProfile, changePassword, toggle2Fa, getConnectedDevices, generate2FaSecret, verify2Fa, revokeDevice } from "@/data/profile";
 import toast from "react-hot-toast";
 import { PhytosanitaryManagement } from "@/presentation/components/settings/PhytosanitaryManagement";
+import { CountrySelector } from "@/presentation/components/settings/CountrySelector";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
@@ -16,6 +17,8 @@ export default function SettingsPage() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [farmName, setFarmName] = useState("");
+    const [phoneCountry, setPhoneCountry] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -57,6 +60,8 @@ export default function SettingsPage() {
             if (localUser) {
                 setName(localUser.name || "");
                 setEmail(localUser.email || "");
+                setPhoneCountry(localUser.phoneCountry || "");
+                setPhoneNumber(localUser.phoneNumber || "");
             }
 
             // Fetch fresh data from API
@@ -64,6 +69,8 @@ export default function SettingsPage() {
             setName(profile.name || "");
             setEmail(profile.email || "");
             setFarmName(profile.farmName || "");
+            setPhoneCountry(profile.phoneCountry || "");
+            setPhoneNumber(profile.phoneNumber || "");
             setIs2FaEnabled(profile.isTwoFactorEnabled || false);
 
             if (localUser) {
@@ -83,7 +90,7 @@ export default function SettingsPage() {
     const handleSaveProfile = async () => {
         setIsSavingProfile(true);
         try {
-            const updated = await updateProfile({ name, email, farmName });
+            const updated = await updateProfile({ name, email, farmName, phoneCountry, phoneNumber });
 
             // Actualizar local storage
             const localUser: any = getUser();
@@ -252,6 +259,24 @@ export default function SettingsPage() {
                                     placeholder="Ej: Finca Valle Verde"
                                     className="w-full px-4 py-2 bg-slate-50 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Teléfono
+                                </label>
+                                <div className="flex gap-2">
+                                    <CountrySelector
+                                        value={phoneCountry}
+                                        onChange={setPhoneCountry}
+                                    />
+                                    <input
+                                        type="tel"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                                        placeholder="Ej: 999111222"
+                                        className="w-full px-4 py-2 bg-slate-50 dark:bg-[#111]/80 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600"
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}

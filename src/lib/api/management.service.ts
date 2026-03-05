@@ -50,5 +50,33 @@ export const managementApi = {
     enrollField: async (fieldId: string, campaignId: string): Promise<FieldCampaign> => {
         const res = await axios.post(`${API_URL}/field-campaigns`, { fieldId, campaignId }, { headers: getHeaders() });
         return res.data;
+    },
+
+    // Analysis History
+    getScanHistory: async (params: {
+        campaignId: string;
+        isInfected?: boolean;
+        fieldIds?: string[];
+        startDate?: string;
+        endDate?: string;
+    }): Promise<import('./management.types').AnalysisFieldCampaignHistory[]> => {
+        const queryParams = new URLSearchParams();
+        queryParams.append('campaignId', params.campaignId);
+
+        if (params.isInfected !== undefined) {
+            queryParams.append('isInfected', String(params.isInfected));
+        }
+        if (params.fieldIds && params.fieldIds.length > 0) {
+            queryParams.append('fieldIds', params.fieldIds.join(','));
+        }
+        if (params.startDate) {
+            queryParams.append('startDate', params.startDate);
+        }
+        if (params.endDate) {
+            queryParams.append('endDate', params.endDate);
+        }
+
+        const res = await axios.get(`${API_URL}/analysis-field-campaigns/history?${queryParams.toString()}`, { headers: getHeaders() });
+        return res.data;
     }
 };
