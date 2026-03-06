@@ -6,8 +6,8 @@ import {
   LayoutDashboard,
   Settings,
   ScanLine,
-  LogOut,
   History,
+  LogOut,
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -52,14 +52,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { href: "/", label: "Panel", icon: LayoutDashboard },
+    { href: "/analysis", label: "Escanear", icon: ScanLine, mobileOnly: true },
     { href: "/scan-history", label: "Historial", icon: History },
     { href: "/settings", label: "Configuracion", icon: Settings },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-gray-100 transition-colors duration-300">
-      <aside className="w-64 bg-white dark:bg-[#0d0d0d] border-r border-slate-200 dark:border-white/5 flex flex-col transition-colors duration-300">
-        <div className="p-6 border-b border-slate-200 dark:border-white/5">
+    <div className="fixed inset-0 flex flex-col md:flex-row bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-gray-100 transition-colors duration-300">
+      <aside className="w-full md:w-64 shrink-0 bg-white dark:bg-[#0d0d0d] border-t md:border-t-0 md:border-r border-slate-200 dark:border-white/5 flex flex-row md:flex-col transition-colors duration-300 order-last md:order-first z-50">
+        <div className="hidden md:block p-6 border-b border-slate-200 dark:border-white/5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#00ff9d]/10 border border-[#00ff9d]/30 rounded-lg flex items-center justify-center p-1.5">
               <Image
@@ -77,7 +78,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <div className="px-4 pt-4">
+        <div className="hidden md:block px-4 pt-4">
           <Link
             href="/analysis"
             className="group relative flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-bold uppercase tracking-widest text-emerald-600 dark:text-[#00ff9d] overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] dark:hover:shadow-[0_0_15px_rgba(0,255,157,0.2)] active:scale-95 bg-white dark:bg-[#111] border border-emerald-500/20 dark:border-[#00ff9d]/30 hover:border-emerald-500 dark:hover:border-[#00ff9d]"
@@ -98,7 +99,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 flex md:flex-col p-2 md:p-4 gap-1 md:space-y-1 justify-around md:justify-start">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -106,20 +107,21 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300",
+                  "flex items-center justify-center md:justify-start gap-1 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-300 flex-1 md:flex-none flex-col md:flex-row",
+                  item.mobileOnly ? "flex md:hidden" : "flex",
                   isActive
-                    ? "bg-emerald-500/10 text-emerald-600 dark:bg-[#00ff9d]/10 dark:text-[#00ff9d] border border-emerald-500/20 dark:border-[#00ff9d]/20 shadow-[0_0_10px_rgba(16,185,129,0.05)] dark:shadow-[0_0_10px_rgba(0,255,157,0.05)]"
-                    : "text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-[#00ff9d] hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent",
+                    ? "text-emerald-600 dark:text-[#00ff9d] bg-emerald-500/10 dark:bg-[#00ff9d]/10 md:border md:border-emerald-500/20 md:dark:border-[#00ff9d]/20 md:shadow-[0_0_10px_rgba(16,185,129,0.05)] md:dark:shadow-[0_0_10px_rgba(0,255,157,0.05)]"
+                    : "text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-[#00ff9d] hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent",
                 )}
               >
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium text-sm tracking-wide">{item.label}</span>
+                <item.icon className="w-5 h-5 md:w-5 md:h-5" />
+                <span className="font-medium text-[10px] md:text-sm tracking-wide">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-white/5">
+        <div className="hidden md:block p-4 border-t border-slate-200 dark:border-white/5">
           <div className="flex items-center gap-3 px-2 py-2 mb-2">
             <div className="w-8 h-8 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-bold text-emerald-600 dark:text-[#00ff9d]">
@@ -145,7 +147,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+      <main className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-300">
         {children}
       </main>
     </div>

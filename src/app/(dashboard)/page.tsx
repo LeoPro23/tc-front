@@ -192,9 +192,9 @@ export default function Dashboard() {
             className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-emerald-500/5 dark:via-[#00ff9d11] to-transparent skew-x-12"
           />
 
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-10">
-              <div className="relative">
+          <div className="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full">
+              <div className="relative shrink-0">
                 {/* Magnetic Energy Orbs */}
                 <motion.div
                   animate={{ scale: [1, 1.2, 1], rotate: 360 }}
@@ -211,20 +211,20 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="text-left">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full animate-pulse dark:shadow-[0_0_10px_#00ff9d]"></div>
-                  <p className="text-[11px] text-emerald-600 dark:text-[#00ff9d] font-mono tracking-[0.5em] uppercase font-black">
+              <div className="text-center md:text-left flex flex-col items-center md:items-start w-full">
+                <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
+                  <div className="w-2 h-2 bg-emerald-500 dark:bg-[#00ff9d] rounded-full animate-pulse dark:shadow-[0_0_10px_#00ff9d] shrink-0"></div>
+                  <p className="text-[10px] md:text-[11px] text-emerald-600 dark:text-[#00ff9d] font-mono tracking-[0.2em] md:tracking-[0.5em] uppercase font-black text-center md:text-left">
                     CARGA NEURAL BIOMÉTRICA // NIVEL_AUTH: 3
                   </p>
                 </div>
-                <h2 className="text-5xl font-black italic tracking-tight uppercase leading-none mb-2 group-hover:translate-x-2 transition-transform duration-500">
+                <h2 className="text-4xl md:text-5xl font-black italic tracking-tight uppercase leading-none mb-3 md:mb-2 group-hover:translate-x-0 md:group-hover:translate-x-2 transition-transform duration-500 w-full">
                   INICIAR{" "}
-                  <span className="text-emerald-600 dark:text-[#00ff9d] dark:drop-shadow-[0_0_15px_rgba(0,255,157,0.4)]">
+                  <span className="text-emerald-600 dark:text-[#00ff9d] dark:drop-shadow-[0_0_15px_rgba(0,255,157,0.4)] block md:inline">
                     ESCANEO NEURAL
                   </span>
                 </h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight max-w-lg">
+                <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium tracking-tight max-w-lg mx-auto md:mx-0">
                   Desplegar clústeres de transformadores de visión (YOLOv8x) para
                   identificación de patógenos a nivel molecular y análisis
                   de vitalidad de cultivos.

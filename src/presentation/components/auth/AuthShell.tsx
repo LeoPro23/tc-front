@@ -74,7 +74,6 @@ export function AuthShell({ children }: { children: ReactNode }) {
       <div className="relative flex min-h-screen w-full items-center px-4 py-6 sm:px-6 lg:p-0">
         <div className="grid w-full gap-6 lg:grid-cols-[1fr_minmax(440px,500px)] lg:items-center xl:grid-cols-[1fr_500px]">
           <div className="w-full lg:h-screen">
-            <AuthIllustration className="h-[44vh] min-h-[300px] w-full lg:hidden" />
             <AuthIllustration className="hidden w-full lg:block lg:h-screen" />
           </div>
 

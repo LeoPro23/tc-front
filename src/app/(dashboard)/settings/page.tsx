@@ -1,16 +1,18 @@
 "use client";
 
-import { Bell, User, Lock, Globe, Mail, Moon, Sun, Loader2, Save, Trash2 } from "lucide-react";
+import { Bell, User, Lock, Globe, Mail, Moon, Sun, Loader2, Save, Trash2, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { getUser, saveUser, getToken } from "@/lib/auth-helpers";
+import { getUser, saveUser, getToken, removeToken } from "@/lib/auth-helpers";
 import { getProfile, updateProfile, changePassword, toggle2Fa, getConnectedDevices, generate2FaSecret, verify2Fa, revokeDevice } from "@/data/profile";
 import toast from "react-hot-toast";
 import { PhytosanitaryManagement } from "@/presentation/components/settings/PhytosanitaryManagement";
 import { CountrySelector } from "@/presentation/components/settings/CountrySelector";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
+    const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
     // Profile State
@@ -191,6 +193,11 @@ export default function SettingsPage() {
 
     const isDark = mounted ? theme === "dark" : false;
     const toggleDarkMode = () => setTheme(isDark ? "light" : "dark");
+
+    const handleLogout = () => {
+        removeToken();
+        router.push("/login");
+    };
 
     if (!mounted) return null;
 
@@ -399,6 +406,15 @@ export default function SettingsPage() {
                         Administra y asigna las campañas activas o caducadas a tus zonas agrícolas. Debes inscribirlas antes de realizar un Análisis Neural.
                     </p>
                     <PhytosanitaryManagement />
+                </div>
+                <div className="md:hidden bg-white dark:bg-[#0d0d0d] rounded-xl p-6 shadow-sm border border-slate-200 dark:border-white/10 mt-8 mb-8 text-center flex justify-center">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-red-500/30 text-red-600 dark:text-[#ff003c] font-bold uppercase tracking-widest hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-300 mx-auto w-full max-w-sm"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        Cerrar Sesión
+                    </button>
                 </div>
             </div>
 
