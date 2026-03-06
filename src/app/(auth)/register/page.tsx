@@ -177,7 +177,7 @@ export default function RegisterPage() {
                 </p>
               </div>
               <h1 className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white">
-                TOMATO
+                PLAGA
                 <span className="text-emerald-600 dark:text-[#00ff9d] drop-shadow-[0_0_10px_rgba(16,185,129,0.4)] dark:drop-shadow-[0_0_10px_rgba(0,255,157,0.5)]">
                   CODE
                 </span>

@@ -130,7 +130,7 @@ export default function LoginPage() {
                 </p>
               </div>
               <h1 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
-                TOMATO
+                PLAGA
                 <span className="text-emerald-600 dark:text-[#00ff9d] drop-shadow-[0_0_12px_rgba(16,185,129,0.4)] dark:drop-shadow-[0_0_12px_rgba(0,255,157,0.6)]">
                   CODE
                 </span>

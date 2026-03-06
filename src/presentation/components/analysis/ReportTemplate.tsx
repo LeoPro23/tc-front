@@ -49,7 +49,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
             </div>
             <div>
               <h1 className="text-3xl font-black tracking-tighter uppercase mr-2">
-                TOMATO<span className="text-[#00ff9d]">CODE</span>
+                PLAGA<span className="text-[#00ff9d]">CODE</span>
               </h1>
               <p className="text-[10px] font-mono text-[#00ff9d]/60 tracking-[0.4em] uppercase">
                 AgriTech AI Neural Report

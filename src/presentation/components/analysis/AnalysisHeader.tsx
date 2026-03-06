@@ -17,7 +17,7 @@ export function AnalysisHeader() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tighter uppercase italic">
-              TOMATO<span className="text-emerald-600 dark:text-[#00ff9d]">CODE</span>
+              PLAGA<span className="text-emerald-600 dark:text-[#00ff9d]">CODE</span>
             </h1>
             <div className="flex items-center gap-2">
               <Leaf className="w-3 h-3 text-emerald-500/50 dark:text-[#00ff9d]/50" />
