@@ -48,3 +48,12 @@ export interface AnalysisFieldCampaignHistory {
     fieldCampaign: FieldCampaign;
     attachedImages: AttachedImage[];
 }
+
+export interface CampaignMetrics {
+    totalScans: number;
+    previousScans: number;
+    scansChangePercentage: number;
+    infectionRate: number;
+    activeNodes: number;
+    totalFields: number;
+}

@@ -22,6 +22,9 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { managementApi } from "@/lib/api/management.service";
+import type { CampaignMetrics } from "@/lib/api/management.types";
 
 const chartData = [
   { month: "Jan", whitefly: 12, aphids: 8, mites: 5 },
@@ -63,6 +66,22 @@ const recentScans = [
 
 export default function Dashboard() {
   const router = useRouter();
+  const [metrics, setMetrics] = useState<CampaignMetrics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadMetrics() {
+      try {
+        const data = await managementApi.getMetrics();
+        setMetrics(data);
+      } catch (err) {
+        console.error("Error loading metrics:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadMetrics();
+  }, []);
 
   return (
     <div className="p-8 bg-gray-50 dark:bg-[#0a0a0a] min-h-screen text-gray-900 dark:text-white transition-colors duration-300">
@@ -118,10 +137,10 @@ export default function Dashboard() {
                 Escaneos Totales
               </p>
               <h3 className="text-4xl font-bold font-mono tracking-tighter">
-                1,284
+                {isLoading ? "..." : metrics?.totalScans ?? 0}
               </h3>
-              <p className="text-[10px] text-emerald-600 dark:text-[#00ff9d] mt-2 font-mono">
-                +12.4% INCREMENTO
+              <p className={`text-[10px] mt-2 font-mono ${!isLoading && metrics && metrics.scansChangePercentage < 0 ? 'text-[#ff003c]' : 'text-emerald-600 dark:text-[#00ff9d]'}`}>
+                {isLoading ? "..." : `${metrics && metrics.scansChangePercentage > 0 ? '+' : ''}${(metrics?.scansChangePercentage ?? 0).toFixed(1)}% ${metrics && metrics.scansChangePercentage < 0 ? 'DECREMENTO' : 'INCREMENTO'}`}
               </p>
             </div>
             <Scan className="w-6 h-6 text-blue-500" />
@@ -137,11 +156,11 @@ export default function Dashboard() {
               <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
                 Tasa de Infección
               </p>
-              <h3 className="text-4xl font-bold font-mono tracking-tighter text-[#ff003c]">
-                18.5%
+              <h3 className={`text-4xl font-bold font-mono tracking-tighter ${!isLoading && metrics && metrics.infectionRate > 10 ? 'text-[#ff003c]' : 'text-emerald-600 dark:text-[#00ff9d]'}`}>
+                {isLoading ? "..." : `${(metrics?.infectionRate ?? 0).toFixed(1)}%`}
               </h3>
-              <p className="text-[10px] text-[#ff003c] mt-2 font-mono">
-                RIESGO: ELEVADO
+              <p className={`text-[10px] mt-2 font-mono ${!isLoading && metrics && metrics.infectionRate > 10 ? 'text-[#ff003c]' : 'text-emerald-600 dark:text-[#00ff9d]'}`}>
+                {isLoading ? "..." : `RIESGO: ${metrics && metrics.infectionRate > 10 ? 'ELEVADO' : 'NORMAL'}`}
               </p>
             </div>
             <AlertTriangle className="w-6 h-6 text-[#ff003c]" />
@@ -155,13 +174,13 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
-                Nodos Activos
+                Campos Analizados
               </p>
               <h3 className="text-4xl font-bold font-mono tracking-tighter text-emerald-600 dark:text-[#00ff9d]">
-                07
+                {isLoading ? "..." : `${(metrics?.activeNodes ?? 0).toString().padStart(2, '0')}/${(metrics?.totalFields ?? 0).toString().padStart(2, '0')}`}
               </h3>
               <p className="text-[10px] text-gray-500 mt-2 font-mono">
-                CONEXIÓN ESTABLE
+                {isLoading ? "..." : "COBERTURA TOTAL"}
               </p>
             </div>
             <Activity className="w-6 h-6 text-emerald-600 dark:text-[#00ff9d]" />

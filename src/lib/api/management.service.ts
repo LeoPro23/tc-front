@@ -27,6 +27,10 @@ export const managementApi = {
         const res = await axios.patch(`${API_URL}/campaigns/${id}`, { startDate, endDate }, { headers: getHeaders() });
         return res.data;
     },
+    getMetrics: async (): Promise<import('./management.types').CampaignMetrics> => {
+        const res = await axios.get(`${API_URL}/campaigns/metrics`, { headers: getHeaders() });
+        return res.data;
+    },
 
     // Fields
     getFields: async (): Promise<Field[]> => {
@@ -78,10 +82,10 @@ export const managementApi = {
 
         const res = await axios.get(`${API_URL}/analysis-field-campaigns/history?${queryParams.toString()}`, { headers: getHeaders() });
         return res.data;
-      },
+    },
 
-      getScanDetails: async (id: string): Promise<import('./management.types').AnalysisFieldCampaignHistory> => {
-          const res = await axios.get(`${API_URL}/analysis-field-campaigns/${id}`, { headers: getHeaders() });
-          return res.data;
-      }
-  };
+    getScanDetails: async (id: string): Promise<import('./management.types').AnalysisFieldCampaignHistory> => {
+        const res = await axios.get(`${API_URL}/analysis-field-campaigns/${id}`, { headers: getHeaders() });
+        return res.data;
+    }
+};
