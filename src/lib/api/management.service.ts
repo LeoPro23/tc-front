@@ -31,6 +31,16 @@ export const managementApi = {
         const res = await axios.get(`${API_URL}/campaigns/metrics`, { headers: getHeaders() });
         return res.data;
     },
+    getPestsTemporal: async (fieldIds?: string[]): Promise<import('./management.types').PestsTemporalResponse> => {
+        const query = fieldIds && fieldIds.length > 0 ? `?fieldIds=${fieldIds.join(',')}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/pests-temporal${query}`, { headers: getHeaders() });
+        return res.data;
+    },
+    getFieldsTemporal: async (fieldIds?: string[]): Promise<import('./management.types').FieldsTemporalResponse> => {
+        const query = fieldIds && fieldIds.length > 0 ? `?fieldIds=${fieldIds.join(',')}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/fields-temporal${query}`, { headers: getHeaders() });
+        return res.data;
+    },
 
     // Fields
     getFields: async (): Promise<Field[]> => {

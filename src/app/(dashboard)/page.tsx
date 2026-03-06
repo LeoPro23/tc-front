@@ -17,6 +17,9 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
+  Legend,
 } from "recharts";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -24,17 +27,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { managementApi } from "@/lib/api/management.service";
-import type { CampaignMetrics } from "@/lib/api/management.types";
+import type { CampaignMetrics, PestsTemporalResponse, FieldsTemporalResponse, FieldCampaign } from "@/lib/api/management.types";
 
-const chartData = [
-  { month: "Jan", whitefly: 12, aphids: 8, mites: 5 },
-  { month: "Feb", whitefly: 15, aphids: 12, mites: 7 },
-  { month: "Mar", whitefly: 18, aphids: 15, mites: 10 },
-  { month: "Apr", whitefly: 22, aphids: 18, mites: 12 },
-  { month: "May", whitefly: 28, aphids: 22, mites: 15 },
-  { month: "Jun", whitefly: 25, aphids: 20, mites: 13 },
-  { month: "Jul", whitefly: 20, aphids: 16, mites: 10 },
-];
+export type ChartMode = 'pest' | 'field';
 
 const recentScans = [
   {
@@ -67,21 +62,59 @@ const recentScans = [
 export default function Dashboard() {
   const router = useRouter();
   const [metrics, setMetrics] = useState<CampaignMetrics | null>(null);
+  const [temporalData, setTemporalData] = useState<PestsTemporalResponse | null>(null);
+  const [fieldsTemporalData, setFieldsTemporalData] = useState<FieldsTemporalResponse | null>(null);
+  const [campaignFields, setCampaignFields] = useState<FieldCampaign[]>([]);
+
+  const [chartMode, setChartMode] = useState<ChartMode>('pest');
+  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadMetrics() {
+    async function loadData() {
+      setIsLoading(true);
       try {
-        const data = await managementApi.getMetrics();
-        setMetrics(data);
+        const campaigns = await managementApi.getCampaigns();
+        const activeCampaign = campaigns.find(c => c.isActive);
+
+        if (activeCampaign) {
+          const fields = await managementApi.getEnrolledFields(activeCampaign.id);
+          setCampaignFields(fields);
+        }
+
+        const [metricsData, temporal, fieldsTemporal] = await Promise.all([
+          managementApi.getMetrics(),
+          managementApi.getPestsTemporal(selectedFieldIds),
+          managementApi.getFieldsTemporal(selectedFieldIds)
+        ]);
+
+        setMetrics(metricsData);
+        setTemporalData(temporal);
+        setFieldsTemporalData(fieldsTemporal);
       } catch (err) {
-        console.error("Error loading metrics:", err);
+        console.error("Error loading dashboard data:", err);
       } finally {
         setIsLoading(false);
       }
     }
-    loadMetrics();
-  }, []);
+    loadData();
+  }, [selectedFieldIds]);
+
+  const toggleFieldSelection = (fieldId: string) => {
+    setSelectedFieldIds(prev =>
+      prev.includes(fieldId)
+        ? prev.filter(id => id !== fieldId)
+        : [...prev, fieldId]
+    );
+  };
+
+  const chartColors = [
+    { stopColor: "#ff003c", id: "colorPest0" }, // Red
+    { stopColor: "#00ff9d", id: "colorPest1" }, // Green
+    { stopColor: "#00bfff", id: "colorPest2" }, // Blue
+  ];
 
   return (
     <div className="p-8 bg-gray-50 dark:bg-[#0a0a0a] min-h-screen text-gray-900 dark:text-white transition-colors duration-300">
@@ -290,79 +323,181 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Analytics Section */}
         <div className="lg:col-span-8 bg-white dark:bg-white/5 dark:backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-white/5 shadow-sm dark:shadow-none">
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">
                 Analíticas de Detección
               </h2>
-              <p className="text-sm text-gray-500 font-mono">
-                DISTRIBUCIÓN TEMPORAL DE PLAGAS
-              </p>
+              <div className="flex items-center gap-4 mt-2">
+                <button
+                  onClick={() => setChartMode('pest')}
+                  className={`text-xs font-mono px-3 py-1 rounded-full transition-colors ${chartMode === 'pest' ? 'bg-emerald-500/10 text-emerald-600 dark:text-[#00ff9d] border-emerald-500/20 border' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  POR PLAGA
+                </button>
+                <button
+                  onClick={() => setChartMode('field')}
+                  className={`text-xs font-mono px-3 py-1 rounded-full transition-colors ${chartMode === 'field' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20 border' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  POR LOTE
+                </button>
+              </div>
             </div>
-            <select className="bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs px-4 py-2 rounded-lg font-mono outline-none text-gray-900 dark:text-white">
-              <option>ÚLTIMA VISTA (7 DÍAS)</option>
-              <option>ANÁLISIS 30 DÍAS</option>
-            </select>
+
+            <div className="flex flex-col gap-2 items-end relative">
+              <select className="bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs px-4 py-2 rounded-lg font-mono outline-none text-gray-900 dark:text-white">
+                <option>ÚLTIMA VISTA (7 DÍAS)</option>
+                <option>ANÁLISIS 30 DÍAS</option>
+              </select>
+
+              {/* Custom Multi-select for Fields */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs px-4 py-2 rounded-lg font-mono outline-none text-gray-900 dark:text-white flex items-center justify-between w-64"
+                >
+                  <span className="truncate">
+                    {selectedFieldIds.length === 0
+                      ? "LOTES SELECCIONADOS (TODOS)"
+                      : `LOTES SELECCIONADOS (${selectedFieldIds.length})`}
+                  </span>
+                  <svg className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 overflow-hidden">
+                    <div className="max-h-60 overflow-y-auto p-2">
+                      {campaignFields.map((fc) => (
+                        <label
+                          key={fc.field.id}
+                          className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedFieldIds.includes(fc.field.id)}
+                            onChange={() => toggleFieldSelection(fc.field.id)}
+                            className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 dark:border-white/20 dark:bg-black"
+                          />
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate flex-1">
+                            {fc.field.name}
+                          </span>
+                        </label>
+                      ))}
+                      {campaignFields.length === 0 && (
+                        <div className="text-xs text-gray-500 p-2 text-center italic">
+                          No hay lotes inscritos
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient
-                    id="colorWhitefly"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#ff003c" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#ff003c" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorMites" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00ff9d" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#00ff9d" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="#e5e7eb"
-                  className="dark:[&>line]:!stroke-[#222]"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="month"
-                  stroke="#9ca3af"
-                  fontSize={10}
-                  fontStyle="italic"
-                />
-                <YAxis stroke="#9ca3af" fontSize={10} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--tooltip-bg, #fff)",
-                    border: "1px solid var(--tooltip-border, #e5e7eb)",
-                    borderRadius: "12px",
-                    color: "var(--tooltip-color, #111)",
-                  }}
-                  itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="whitefly"
-                  stroke="#ff003c"
-                  fillOpacity={1}
-                  fill="url(#colorWhitefly)"
-                  strokeWidth={3}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="mites"
-                  stroke="#00ff9d"
-                  fillOpacity={1}
-                  fill="url(#colorMites)"
-                  strokeWidth={3}
-                />
-              </AreaChart>
+              {chartMode === 'pest' ? (
+                temporalData?.data && temporalData.data.length > 0 ? (
+                  <AreaChart data={temporalData.data}>
+                    <defs>
+                      {temporalData.topPests.map((pest, index) => (
+                        <linearGradient
+                          key={`gradient-${index}`}
+                          id={chartColors[index]?.id || `colorPest${index}`}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop offset="5%" stopColor={chartColors[index]?.stopColor || "#ccc"} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={chartColors[index]?.stopColor || "#ccc"} stopOpacity={0} />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#e5e7eb"
+                      className="dark:[&>line]:!stroke-[#222]"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="dateStr"
+                      stroke="#9ca3af"
+                      fontSize={10}
+                      fontStyle="italic"
+                    />
+                    <YAxis stroke="#9ca3af" fontSize={10} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--tooltip-bg, #fff)",
+                        border: "1px solid var(--tooltip-border, #e5e7eb)",
+                        borderRadius: "12px",
+                        color: "var(--tooltip-color, #111)",
+                      }}
+                      itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', marginTop: '10px' }} />
+                    {temporalData.topPests.map((pest, index) => (
+                      <Area
+                        key={`area-${index}`}
+                        type="monotone"
+                        dataKey={pest}
+                        stroke={chartColors[index]?.stopColor || "#ccc"}
+                        fillOpacity={1}
+                        fill={`url(#${chartColors[index]?.id || `colorPest${index}`})`}
+                        strokeWidth={3}
+                      />
+                    ))}
+                  </AreaChart>
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full text-gray-500 font-mono text-sm">
+                    NO HAY SUFICIENTES DATOS TEMPORALES DE PLAGAS
+                  </div>
+                )
+              ) : (
+                fieldsTemporalData?.data && fieldsTemporalData.data.length > 0 ? (
+                  <BarChart data={fieldsTemporalData.data}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#e5e7eb"
+                      className="dark:[&>line]:!stroke-[#222]"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="dateStr"
+                      stroke="#9ca3af"
+                      fontSize={10}
+                      fontStyle="italic"
+                    />
+                    <YAxis stroke="#9ca3af" fontSize={10} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--tooltip-bg, #fff)",
+                        border: "1px solid var(--tooltip-border, #e5e7eb)",
+                        borderRadius: "12px",
+                        color: "var(--tooltip-color, #111)",
+                      }}
+                      itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', marginTop: '10px' }} />
+                    {fieldsTemporalData.topFields.map((field, index) => (
+                      <Bar
+                        key={`bar-${index}`}
+                        dataKey={field}
+                        stackId="a"
+                        fill={chartColors[index]?.stopColor || "#ccc"}
+                        radius={index === fieldsTemporalData.topFields.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                        barSize={30}
+                      />
+                    ))}
+                  </BarChart>
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full text-gray-500 font-mono text-sm">
+                    NO HAY SUFICIENTES DATOS TEMPORALES DE LOTES
+                  </div>
+                )
+              )}
             </ResponsiveContainer>
           </div>
         </div>

@@ -57,3 +57,13 @@ export interface CampaignMetrics {
     activeNodes: number;
     totalFields: number;
 }
+
+export interface PestsTemporalResponse {
+    data: any[];
+    topPests: string[];
+}
+
+export interface FieldsTemporalResponse {
+    data: any[];
+    topFields: string[];
+}
