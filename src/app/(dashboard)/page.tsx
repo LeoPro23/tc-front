@@ -73,8 +73,14 @@ export default function Dashboard() {
         className="flex items-center justify-between mb-12 border-b border-gray-200 dark:border-white/5 pb-8"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-[0_0_15px_rgba(0,255,157,0.1)]">
-            <Dna className="w-8 h-8 text-emerald-600 dark:text-[#00ff9d]" />
+          <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-[0_0_15px_rgba(0,255,157,0.1)] flex items-center justify-center w-[52px] h-[52px]">
+            <Image
+              src="/images/logo-bg-transparent.png"
+              alt="PlagaCode Logo"
+              width={36}
+              height={36}
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tighter flex items-center gap-2">
