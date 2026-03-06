@@ -232,6 +232,9 @@ export default function AnalysisPage() {
     (async () => {
       try {
         setIsManagementLoading(true);
+        // PASO 0.1 (FRONTEND - ORIGEN DE DATOS): Carga inicial de Lotes
+        // Al montar la página, el frontend le pide a la API REST de Gestión (managementApi)
+        // los datos estructurados en PostgreSQL de Campañas y Campos disponibles para el usuario login.
         const fetchedCampaigns = await managementApi.getCampaigns();
         const fetchedFields = await managementApi.getFields();
         if (active) {
@@ -247,10 +250,13 @@ export default function AnalysisPage() {
     return () => { active = false; }
   }, []);
 
-  // Lógica interactiva cuando se elige/cambia Campana
+  // Lógica interactiva cuando se elige/cambia Campaña
   useEffect(() => {
     let active = true;
     if (selectedCampaignId) {
+      // PASO 0.2 (FRONTEND - ORIGEN DE DATOS): Combobox Dinámico
+      // Al escoger una Campaña en el UI, disparamos una consulta derivada a la API
+      // para traer únicamente los Campos que estén inscritos en dicha Campaña.
       managementApi.getEnrolledFields(selectedCampaignId)
         .then(res => {
           if (active) setEnrolledFields(res);
@@ -343,6 +349,10 @@ export default function AnalysisPage() {
     addLog("[ML] EJECUTANDO INFERENCIA MULTI-MODELO...");
     addLog(`[INGESTA] ${entries.length} IMAGENES EN COLA...`);
 
+    // PASO 1 (FRONTEND): Preparar el paquete de datos (FormData)
+    // Se empaquetan las imágenes en crudo que seleccionó el agricultor junto
+    // con el contexto agronómico (clima, suelo, etapa fenológica) temporal para 
+    // enviarlo todo estructurado hacia nuestro backend en Node.js.
     const formData = new FormData();
     entries.forEach((entry) => {
       formData.append("files", entry.file, entry.file.name);
@@ -352,6 +362,9 @@ export default function AnalysisPage() {
     if (soilQuality.trim()) formData.append("soilQuality", soilQuality.trim());
     if (currentClimate.trim()) formData.append("currentClimate", currentClimate.trim());
 
+    // PASO 2 (FRONTEND): Enviar la petición REST al Backend (Node.js)
+    // Se adjunta el token JWT de seguridad del usuario logueado en las cabeceras
+    // para cruzar nuestro Endpoint asegurado por el Guard allí.
     try {
       const token = getToken();
       const response = await fetch(`${URL_BACKEND}/pests/analyze/batch`, {
@@ -582,6 +595,9 @@ export default function AnalysisPage() {
                       3. Contexto Agronómico (opcional, mejora recomendaciones IA)
                     </label>
                     <div>
+                      {/* PASO 0.3 (FRONTEND - ORIGEN DE DATOS): Contextos estáticos y libres */}
+                      {/* El "Estado Fenológico" es un desplegable hardcodeado en el código fuente de React, */}
+                      {/* mientras que el Suelo y Clima nacen del tipeo manual y libre del agricultor en TxtArea. */}
                       <label className="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">Estado Fenológico</label>
                       <select
                         value={phenologicalState}
