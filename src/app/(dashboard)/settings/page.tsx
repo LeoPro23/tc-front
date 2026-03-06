@@ -195,7 +195,7 @@ export default function SettingsPage() {
     if (!mounted) return null;
 
     return (
-        <div className="p-8 max-w-4xl relative">
+        <div className="p-8 w-full max-w-7xl mx-auto relative">
             {/* Header */}
             <div className="mb-8 flex justify-between items-end">
                 <div>
