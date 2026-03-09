@@ -21,6 +21,16 @@ export interface FieldCampaign {
     createdAt: string;
 }
 
+export interface ModelResult {
+    id: string;
+    diagnosis: string;
+    confidence: number;
+    boundingBox: number[]; // [x1, y1, x2, y2]
+    model?: {
+        name: string;
+    };
+}
+
 export interface AttachedImage {
     id: string;
     url: string;
@@ -29,6 +39,7 @@ export interface AttachedImage {
     recommendedProduct?: string;
     operativeGuide?: string;
     biosecurityProtocol?: string;
+    modelResults?: ModelResult[];
 }
 
 export interface AnalysisFieldCampaignHistory {
