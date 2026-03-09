@@ -94,6 +94,7 @@ export function PhytosanitaryManagement() {
                 new Date(newCampaignEnd + 'T12:00:00').toISOString()
             );
             setCampaigns(prev => [c, ...prev]);
+            setEnrollCampaignId(c.id);
             setNewCampaignStart("");
             setNewCampaignEnd("");
             toast.success("Campaña creada exitosamente");
@@ -114,6 +115,7 @@ export function PhytosanitaryManagement() {
         try {
             const f = await managementApi.createField(newFieldName.trim(), newFieldIrrigation.trim() || undefined);
             setFields(prev => [f, ...prev]);
+            setEnrollFieldId(f.id);
             setNewFieldName("");
             setNewFieldIrrigation("");
             toast.success("Campo registrado correctamente");
@@ -155,7 +157,11 @@ export function PhytosanitaryManagement() {
             return;
         }
 
-        const alreadyEnrolled = enrolledFields.find(ef => ef.field.id === enrollFieldId);
+        const alreadyEnrolled = enrolledFields.find(ef => {
+            const currentFieldId = ef.field?.id || (ef as any).fieldId || (typeof ef.field === 'string' ? ef.field : null);
+            return currentFieldId === enrollFieldId;
+        });
+
         if (alreadyEnrolled) {
             toast.error("Este campo ya está inscrito en la campaña");
             return;
@@ -344,6 +350,7 @@ export function PhytosanitaryManagement() {
                                 <div>
                                     <label className="block text-xs font-medium text-emerald-700 dark:text-emerald-400 mb-1">Campaña Activa</label>
                                     <select value={enrollCampaignId} onChange={e => setEnrollCampaignId(e.target.value)} required className="w-full bg-white dark:bg-[#111] border border-emerald-200 dark:border-white/10 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white">
+                                        <option value="" disabled>-- Seleccione Campaña --</option>
                                         {campaigns.map(c => <option key={c.id} value={c.id}>ID: {c.id.split('-')[0]} (Inicio: {formatLocalDate(c.startDate)})</option>)}
                                     </select>
                                 </div>
@@ -351,7 +358,17 @@ export function PhytosanitaryManagement() {
                                     <label className="block text-xs font-medium text-emerald-700 dark:text-emerald-400 mb-1">Campo Base a Inscribir</label>
                                     <select value={enrollFieldId} onChange={e => setEnrollFieldId(e.target.value)} required className="w-full bg-white dark:bg-[#111] border border-emerald-200 dark:border-white/10 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-emerald-500 dark:text-white">
                                         <option value="" disabled>-- Seleccione Campo --</option>
-                                        {fields.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                                        {fields
+                                            .filter(f => !enrolledFields.some(ef => {
+                                                const currentFieldId = ef.field?.id || (ef as any).fieldId || (typeof ef.field === 'string' ? ef.field : null);
+                                                return currentFieldId === f.id;
+                                            }))
+                                            .map(f => (
+                                                <option key={f.id} value={f.id}>
+                                                    {f.name}
+                                                </option>
+                                            ))
+                                        }
                                     </select>
                                 </div>
                                 <button type="submit" disabled={isEnrolling || !enrollCampaignId || !enrollFieldId} className="px-4 py-2 h-[38px] bg-emerald-600 dark:bg-[#00ff9d] text-white dark:text-black font-bold text-xs rounded-lg flex items-center justify-center gap-2 disabled:opacity-50">
