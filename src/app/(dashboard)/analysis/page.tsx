@@ -125,12 +125,12 @@ function buildFallbackImageInterpretation(entry: {
         dose: "No aplica",
         method:
           entry.verificationReason ??
-          "Imagen fuera del dominio de inspeccion agricola de tomate.",
+          "Imagen fuera del dominio de inspeccion agrícola.",
       },
       biosecurityStatus: "RECHAZADA",
       biosecurityProtocol:
         entry.verificationReason ??
-        "Solicitar una imagen valida (hoja, planta, trampa o contexto de inspeccion de tomate).",
+        "Solicitar una imagen valida (hoja, planta, trampa o contexto de inspeccion agrícola).",
     };
   }
 

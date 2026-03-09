@@ -126,7 +126,7 @@ export default function PestScanner() {
                         </div>
                         <div>
                             <p className="text-lg font-medium text-foreground">Haz clic o arrastra una imagen para subir</p>
-                            <p className="text-sm">Soporta hojas de tomate y trampas</p>
+                            <p className="text-sm">Soporta hojas, plantas y trampas agrícolas</p>
                         </div>
                     </div>
                 ) : (

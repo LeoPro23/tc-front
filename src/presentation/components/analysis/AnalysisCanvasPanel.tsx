@@ -345,7 +345,7 @@ export function AnalysisCanvasPanel({
                   </h2>
                   <p className="text-amber-700 dark:text-amber-200 text-[10px] font-mono tracking-widest font-black">
                     {selectedEntry.verificationReason ??
-                      "No corresponde a cultivo/plaga de tomate."}
+                      "No corresponde a cultivo/plaga agrícola."}
                   </p>
                 </div>
               </motion.div>

@@ -27,7 +27,7 @@ export function ScanItem({
       <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 group-hover:border-emerald-400 dark:group-hover:border-[#00ff9d]/50 transition-colors">
         <ImageWithFallback
           src={image}
-          alt="Escaneo de hoja de tomate"
+          alt="Escaneo de hoja"
           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
         />
         {/* Scanning line effect on hover */}
