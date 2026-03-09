@@ -395,7 +395,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="h-[350px] w-full">
+          <div className="h-[350px] w-full relative">
             <ResponsiveContainer width="100%" height="100%">
               {chartMode === 'pest' ? (
                 temporalData?.data && temporalData.data.length > 0 ? (
@@ -451,8 +451,10 @@ export default function Dashboard() {
                     ))}
                   </AreaChart>
                 ) : (
-                  <div className="flex items-center justify-center w-full h-full text-gray-500 font-mono text-sm">
-                    NO HAY SUFICIENTES DATOS TEMPORALES DE PLAGAS
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-gray-400 dark:text-gray-500 font-bold tracking-widest text-lg lg:text-xl text-center px-4">
+                      NO HAY SUFICIENTES DATOS TEMPORALES DE PLAGAS
+                    </div>
                   </div>
                 )
               ) : (
@@ -493,8 +495,10 @@ export default function Dashboard() {
                     ))}
                   </BarChart>
                 ) : (
-                  <div className="flex items-center justify-center w-full h-full text-gray-500 font-mono text-sm">
-                    NO HAY SUFICIENTES DATOS TEMPORALES DE LOTES
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-gray-400 dark:text-gray-500 font-bold tracking-widest text-lg lg:text-xl text-center px-4">
+                      NO HAY SUFICIENTES DATOS TEMPORALES DE LOTES
+                    </div>
                   </div>
                 )
               )}
