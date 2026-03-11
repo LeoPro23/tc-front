@@ -106,7 +106,6 @@ export const managementApi = {
         
         const res = await axios.post(`${API_URL}/analysis-comments/${analysisId}`, formData, {
             headers: {
-                'Content-Type': 'multipart/form-data',
                 Authorization: `Bearer ${token}`,
             },
         });
