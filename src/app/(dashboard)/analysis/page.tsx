@@ -16,6 +16,7 @@ import {
   type ImageAnalysisEntry,
   type PerImageInterpretation,
 } from "@/presentation/components/analysis";
+import { AudioRecorder } from "@/presentation/components/analysis/AudioRecorder";
 import { URL_BACKEND } from "@/shared/config/backend-url";
 import { managementApi } from "@/lib/api/management.service";
 import type { Campaign, Field, FieldCampaign } from "@/lib/api/management.types";
@@ -182,6 +183,7 @@ export default function AnalysisPage() {
   const [globalSummary, setGlobalSummary] = useState<string | null>(null);
   const [globalBatchInterpretation, setGlobalBatchInterpretation] = useState<BatchInterpretation | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [createdAnalysisId, setCreatedAnalysisId] = useState<string | null>(null);
 
   // Estados de Pre-Seleccion (Campaign y Field)
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -313,6 +315,7 @@ export default function AnalysisPage() {
     setGlobalSummary(null);
     setScanLogs([]);
     setError(null);
+    setCreatedAnalysisId(null);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -341,6 +344,7 @@ export default function AnalysisPage() {
     setGlobalSummary(null);
     setGlobalBatchInterpretation(null);
     setError(null);
+    setCreatedAnalysisId(null);
 
     addLog("[SISTEMA] ACCEDIENDO AL NUCLEO NEURONAL PLAGACODE...");
     await new Promise((r) => setTimeout(r, 600));
@@ -378,6 +382,10 @@ export default function AnalysisPage() {
       if (!response.ok) throw new Error("Fallo el analisis del backend");
 
       const data = await response.json();
+      
+      if (data.analysisId) {
+        setCreatedAnalysisId(data.analysisId);
+      }
 
       addLog("[BD] EMPAREJANDO ADN DEL PATOGENO...");
       await new Promise((r) => setTimeout(r, 800));
@@ -736,6 +744,12 @@ export default function AnalysisPage() {
                   protocol={selectedBiosecurityProtocol}
                 />
               </div>
+              
+              {createdAnalysisId && (
+                <div className="mt-2">
+                  <AudioRecorder analysisId={createdAnalysisId} />
+                </div>
+              )}
             </main>
 
             <RecipeSidebar
