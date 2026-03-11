@@ -42,6 +42,15 @@ export interface AttachedImage {
     modelResults?: ModelResult[];
 }
 
+export interface AnalysisComment {
+    id: string;
+    audioUrl: string;
+    transcription: string;
+    diagnosis?: string;
+    treatment?: string;
+    createdAt: string;
+}
+
 export interface AnalysisFieldCampaignHistory {
     id: string;
     date: string;
@@ -58,6 +67,7 @@ export interface AnalysisFieldCampaignHistory {
     maxConfidence?: number;
     fieldCampaign: FieldCampaign;
     attachedImages: AttachedImage[];
+    comment?: AnalysisComment;
 }
 
 export interface CampaignMetrics {

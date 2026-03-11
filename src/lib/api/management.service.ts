@@ -97,5 +97,19 @@ export const managementApi = {
     getScanDetails: async (id: string): Promise<import('./management.types').AnalysisFieldCampaignHistory> => {
         const res = await axios.get(`${API_URL}/analysis-field-campaigns/${id}`, { headers: getHeaders() });
         return res.data;
+    },
+
+    uploadAnalysisComment: async (analysisId: string, audioBlob: Blob): Promise<{ message: string }> => {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'comment.webm');
+        const token = getToken();
+        
+        const res = await axios.post(`${API_URL}/analysis-comments/${analysisId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return res.data;
     }
 };

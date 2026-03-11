@@ -7,6 +7,7 @@ import type { AnalysisFieldCampaignHistory } from "@/lib/api/management.types";
 import { AnalysisHeader, BiosecurityCard } from "@/presentation/components/analysis";
 import { ArrowLeft } from "lucide-react";
 import { ImageWithFallback } from "@/presentation/components/figma/ImageWithFallback";
+import { AudioRecorder } from "@/presentation/components/analysis/AudioRecorder";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import NextImage from "next/image";
@@ -336,6 +337,39 @@ export default function ScanHistoryDetailPage() {
                    </motion.div>
                  )}
                </AnimatePresence>
+            </div>
+          )}
+          
+          {/* Analysis Comments Recorder */}
+          {!data.comment ? (
+            <AudioRecorder analysisId={id as string} />
+          ) : (
+            <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm dark:shadow-none">
+              <h3 className="text-sm font-black tracking-tighter italic text-gray-900 dark:text-white uppercase mb-4 text-emerald-600">
+                Comentarios Adicionales Procesados
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[10px] font-mono font-bold uppercase text-gray-500 mb-1">Tu Audio / Transcripción</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-200 italic">"{data.comment.transcription}"</p>
+                </div>
+                {data.comment.diagnosis && (
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-gray-500 mb-1">Nuevo Diagnóstico IA</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{data.comment.diagnosis}</p>
+                  </div>
+                )}
+                {data.comment.treatment && (
+                  <div>
+                    <p className="text-[10px] font-mono font-bold uppercase text-gray-500 mb-1">Nuevo Tratamiento IA</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{data.comment.treatment}</p>
+                  </div>
+                )}
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                  <p className="text-[10px] font-mono font-bold uppercase text-gray-500 mb-2">Escuchar Audio Original</p>
+                  <audio src={data.comment.audioUrl} controls className="h-10 outline-none w-full max-w-sm" />
+                </div>
+              </div>
             </div>
           )}
         </div>
