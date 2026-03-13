@@ -717,7 +717,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2 h-[380px] w-full relative">
               {decisionChartMode === 'evolution' ? (
                 // 1. LineChart Multi-Serie
-                (comparisonMode === 'lotes' ? (pestEvolutionData && pestEvolutionData.data?.length > 0) : (compareEvolutionData && compareEvolutionData.data?.length > 0)) ? (
+                (comparisonMode === 'lotes' ? (pestEvolutionData && pestEvolutionData.data?.length > 0 && pestEvolutionData.fields?.length > 0) : (compareEvolutionData && compareEvolutionData.data?.length > 0 && (compareEvolutionData.campaigns?.length ?? 0) > 0)) ? (
                   <div className="w-full h-full flex flex-col">
                     <div className="flex justify-between items-center mb-4 px-4">
                       <p className="text-xs font-mono text-gray-400 uppercase">
@@ -761,15 +761,15 @@ export default function Dashboard() {
                         {comparisonMode === 'lotes' ? (
                           pestEvolutionData?.fields?.map((field: string, index: number) => (
                              <Line 
-                               key={field} type="monotone" dataKey={field} 
+                               key={field} type="linear" dataKey={field} 
                                stroke={chartColors[index]?.stopColor || "#8884d8"} 
                                strokeWidth={3} dot={{ r: 3, strokeWidth: 1 }} activeDot={{ r: 5 }}
                              />
                           ))
                         ) : (
-                          compareEvolutionData?.campaigns?.map((camp, index) => (
+                          compareEvolutionData?.campaigns?.map((camp: string, index: number) => (
                              <Line 
-                               key={camp} type="monotone" dataKey={camp} 
+                               key={camp} type="linear" dataKey={camp} 
                                stroke={chartColors[index]?.stopColor || "#8884d8"} 
                                strokeWidth={3} dot={{ r: 3, strokeWidth: 1 }} activeDot={{ r: 5 }}
                              />
