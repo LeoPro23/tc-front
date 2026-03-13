@@ -200,6 +200,10 @@ export default function Dashboard() {
     refreshEvolution();
   }, [selectedPest, selectedCampaignId, comparisonMode]);
 
+  useEffect(() => {
+    setAiRecommendation(null);
+  }, [comparisonMode, selectedCampaignId, selectedCampaignIds, decisionChartMode, selectedPest]);
+
   const toggleFieldSelection = (fieldId: string) => {
     setSelectedFieldIds(prev =>
       prev.includes(fieldId)
