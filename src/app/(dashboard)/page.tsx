@@ -707,7 +707,9 @@ export default function Dashboard() {
                 (comparisonMode === 'lotes' ? (pestEvolutionData && pestEvolutionData.data?.length > 0) : (compareEvolutionData && compareEvolutionData.data?.length > 0)) ? (
                   <div className="w-full h-full flex flex-col">
                     <p className="text-xs font-mono text-gray-500 mb-2 uppercase text-center">
-                      {comparisonMode === 'lotes' ? `Evolución Comparativa: ${pestEvolutionData!.pest}` : 'Evolución Inter-Campaña'}
+                      {comparisonMode === 'lotes' 
+                        ? `Evolución Comparativa: ${pestEvolutionData!.pest === 'tuta_absoluta' ? 'Tuta Absoluta' : pestEvolutionData!.pest === 'mosca_blanca' ? 'Mosca Blanca' : pestEvolutionData!.pest === 'minador' ? 'Minador' : pestEvolutionData!.pest}` 
+                        : 'Evolución Inter-Campaña'}
                     </p>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={comparisonMode === 'lotes' ? pestEvolutionData!.data : compareEvolutionData!.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -746,26 +748,65 @@ export default function Dashboard() {
                 )
               ) : decisionChartMode === 'risk' ? (
                 // 2. Radar Chart
-                (comparisonMode === 'lotes' ? (fieldRiskProfileData && fieldRiskProfileData.data.length > 0) : (compareRiskProfileData && compareRiskProfileData.data.length > 0)) ? (
+                (comparisonMode === 'lotes' ? ((fieldRiskProfileData?.data?.length ?? 0) > 0) : ((compareRiskProfileData?.data?.length ?? 0) > 0)) ? (
                   <div className="w-full h-full flex flex-col">
                     <p className="text-xs font-mono text-gray-500 mb-2 uppercase text-center">Riesgo Multi-plaga</p>
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="75%" data={comparisonMode === 'lotes' ? fieldRiskProfileData!.data : compareRiskProfileData!.data}>
-                        <PolarGrid stroke="#e5e7eb" className="dark:stroke-[#333]" />
-                        <PolarAngleAxis dataKey="pest" tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 'bold' }} />
-                        <PolarRadiusAxis angle={90} domain={[0, 'auto']} tick={false} axisLine={false} />
-                        <Tooltip />
-                        <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                        {comparisonMode === 'lotes' ? (
-                          fieldRiskProfileData!.fields.map((field, index) => (
-                            <Radar key={field} name={field} dataKey={field} stroke={chartColors[index]?.stopColor || "#8884d8"} fill={chartColors[index]?.stopColor || "#8884d8"} fillOpacity={0.3} />
-                          ))
-                        ) : (
-                          compareRiskProfileData!.campaigns.map((camp, index) => (
-                            <Radar key={camp} name={camp} dataKey={camp} stroke={chartColors[index]?.stopColor || "#8884d8"} fill={chartColors[index]?.stopColor || "#8884d8"} fillOpacity={0.3} />
-                          ))
-                        )}
-                      </RadarChart>
+                      {(() => {
+                        const rawData = comparisonMode === 'lotes' ? fieldRiskProfileData!.data : compareRiskProfileData!.data;
+
+                        // Calcular el máximo global para normalizar el dominio del radar
+                        const seriesKeys = comparisonMode === 'lotes'
+                          ? (fieldRiskProfileData!.fields || [])
+                          : (compareRiskProfileData!.campaigns || []);
+
+                        let globalMax = 0;
+                        rawData.forEach((row: any) => {
+                          seriesKeys.forEach((key: string) => {
+                            const v = Number(row[key]) || 0;
+                            if (v > globalMax) globalMax = v;
+                          });
+                        });
+                        // Siempre al menos 1 como tope para evitar radar de 0
+                        const domainMax = Math.max(globalMax, 1);
+
+                        return (
+                          <RadarChart cx="50%" cy="50%" outerRadius="65%" data={rawData} startAngle={90} endAngle={-270}>
+                            <PolarGrid stroke="#e5e7eb" className="dark:stroke-[#333]" />
+                            <PolarAngleAxis 
+                              dataKey="pest" 
+                              tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 'bold' }} 
+                              tickFormatter={(val) => {
+                                if (val === 'tuta_absoluta') return 'Tuta Absoluta';
+                                if (val === 'mosca_blanca') return 'Mosca Blanca';
+                                if (val === 'minador') return 'Minador';
+                                return val;
+                              }}
+                            />
+                            <PolarRadiusAxis angle={90} domain={[0, domainMax]} tick={false} axisLine={false} />
+                            <Tooltip 
+                              formatter={(value: any, name?: string) => [value, name || '']}
+                              labelFormatter={(label) => {
+                                if (label === 'tuta_absoluta') return 'Tuta Absoluta';
+                                if (label === 'mosca_blanca') return 'Mosca Blanca';
+                                if (label === 'minador') return 'Minador';
+                                return label;
+                              }}
+                              contentStyle={{ backgroundColor: "rgba(255, 255, 255, 0.9)", borderRadius: "12px", border: "1px solid #e5e7eb" }}
+                            />
+                            <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '20px' }} />
+                            {comparisonMode === 'lotes' ? (
+                              (fieldRiskProfileData!.fields || []).map((field: string, index: number) => (
+                                <Radar key={field} name={field} dataKey={field} stroke={chartColors[index]?.stopColor || "#8884d8"} fill={chartColors[index]?.stopColor || "#8884d8"} fillOpacity={0.3} />
+                              ))
+                            ) : (
+                              (compareRiskProfileData!.campaigns || []).map((camp: string, index: number) => (
+                                <Radar key={camp} name={camp} dataKey={camp} stroke={chartColors[index]?.stopColor || "#8884d8"} fill={chartColors[index]?.stopColor || "#8884d8"} fillOpacity={0.3} />
+                              ))
+                            )}
+                          </RadarChart>
+                        );
+                      })()}
                     </ResponsiveContainer>
                   </div>
                 ) : (
@@ -775,7 +816,7 @@ export default function Dashboard() {
                 )
               ) : (
                 // 3. Composed Chart
-                (comparisonMode === 'lotes' ? (fieldPerformanceData && fieldPerformanceData.data.length > 0) : (comparePerformanceData && comparePerformanceData.data.length > 0)) ? (
+                (comparisonMode === 'lotes' ? ((fieldPerformanceData?.data?.length ?? 0) > 0) : ((comparePerformanceData?.data?.length ?? 0) > 0)) ? (
                   <div className="w-full h-full flex flex-col">
                     <p className="text-xs font-mono text-gray-500 mb-2 uppercase text-center">
                       {comparisonMode === 'lotes' ? `Rendimiento Relativo: ${fieldPerformanceData!.field} vs Promedio` : 'Rendimiento Inter-Campañas'}
