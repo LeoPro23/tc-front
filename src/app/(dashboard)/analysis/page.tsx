@@ -240,8 +240,12 @@ export default function AnalysisPage() {
         const fetchedCampaigns = await managementApi.getCampaigns();
         const fetchedFields = await managementApi.getFields();
         if (active) {
-          setCampaigns(fetchedCampaigns);
+          const activeCampaigns = fetchedCampaigns.filter(c => c.isActive);
+          setCampaigns(activeCampaigns);
           setFields(fetchedFields);
+          if (activeCampaigns.length === 1) {
+            setSelectedCampaignId(activeCampaigns[0].id);
+          }
         }
       } catch (err) {
         console.error("Error cargando campañas y campos", err);
@@ -552,10 +556,10 @@ export default function AnalysisPage() {
                       }}
                       className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all dark:text-white"
                     >
-                      <option value="" disabled>-- Escoja una campaña --</option>
+                      <option value="" disabled>-- Escoja una campaña activa --</option>
                       {campaigns.map(c => (
                         <option key={c.id} value={c.id}>
-                          Instancia de Producción (Inicio: {new Date(c.startDate).toLocaleDateString()}) ID: {c.id.split('-')[0]}
+                          Campaña {new Date(c.startDate).toLocaleDateString()} - {new Date(c.endDate).toLocaleDateString()} (Activa)
                         </option>
                       ))}
                     </select>
