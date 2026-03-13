@@ -91,7 +91,7 @@ export interface FieldsTemporalResponse {
 
 export interface PestEvolutionResponse {
     pest: string | null;
-    fields: string[];
+    topFields: string[];
     data: any[];
 }
 
@@ -111,6 +111,7 @@ export interface FieldPerformanceResponse {
 }
 
 export interface StrategicRecommendationResponse {
+    chartInterpretation: string;
     summary: string;
     actionPlan: string;
 }

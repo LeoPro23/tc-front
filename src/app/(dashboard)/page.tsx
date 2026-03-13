@@ -717,7 +717,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2 h-[380px] w-full relative">
               {decisionChartMode === 'evolution' ? (
                 // 1. LineChart Multi-Serie
-                (comparisonMode === 'lotes' ? (pestEvolutionData && pestEvolutionData.data?.length > 0 && pestEvolutionData.fields?.length > 0) : (compareEvolutionData && compareEvolutionData.data?.length > 0 && (compareEvolutionData.campaigns?.length ?? 0) > 0)) ? (
+                (comparisonMode === 'lotes' ? (pestEvolutionData && pestEvolutionData.data?.length > 0 && pestEvolutionData.topFields?.length > 0) : (compareEvolutionData && compareEvolutionData.data?.length > 0 && (compareEvolutionData.campaigns?.length ?? 0) > 0)) ? (
                   <div className="w-full h-full flex flex-col">
                     <div className="flex justify-between items-center mb-4 px-4">
                       <p className="text-xs font-mono text-gray-400 uppercase">
@@ -759,7 +759,7 @@ export default function Dashboard() {
                         />
                         <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', marginTop: '10px' }} />
                         {comparisonMode === 'lotes' ? (
-                          pestEvolutionData?.fields?.map((field: string, index: number) => (
+                          pestEvolutionData?.topFields?.map((field: string, index: number) => (
                              <Line 
                                key={field} type="linear" dataKey={field} 
                                stroke={chartColors[index]?.stopColor || "#8884d8"} 
@@ -914,7 +914,7 @@ export default function Dashboard() {
                     className="w-full py-3 bg-emerald-500 dark:bg-[#00ff9d] text-white dark:text-black font-bold text-[11px] rounded-xl hover:bg-emerald-600 dark:hover:bg-[#00cc7d] transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-emerald-500/20 disabled:opacity-50"
                   >
                     {isAiLoading ? (
-                      <span className="flex items-center gap-2"><div className="w-3 h-3 border-2 border-black dark:border-white rounded-full border-t-transparent animate-spin"/> MENTE ENJAMBRE PROCESANDO...</span>
+                      <span className="flex items-center gap-2"><div className="w-3 h-3 border-2 border-black dark:border-white rounded-full border-t-transparent animate-spin"/> PROCESANDO...</span>
                     ) : (
                       <span className="flex items-center gap-2"><Zap className="w-3.5 h-3.5"/> SOLICITAR CONSEJO</span>
                     )}
@@ -923,17 +923,25 @@ export default function Dashboard() {
               ) : (
                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar relative z-10 space-y-4">
                   <div>
-                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">RESUMEN EJECUTIVO (IA)</p>
-                    <p className="text-sm font-medium leading-snug">{aiRecommendation.summary}</p>
+                    <p className="text-[10px] font-mono text-indigo-500 uppercase mb-1 flex items-center gap-1.5">
+                      <Activity className="w-3 h-3" /> INTERPRETACIÓN DE GRÁFICOS
+                    </p>
+                    <p className="text-xs text-gray-700 dark:text-gray-200 leading-relaxed">{aiRecommendation.chartInterpretation}</p>
                   </div>
                   <div className="pt-3 border-t border-gray-200 dark:border-white/10">
-                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">PLAN DE ACCIÓN TÁCTICO</p>
+                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">RESUMEN EJECUTIVO</p>
+                    <p className="text-xs font-medium leading-snug">{aiRecommendation.summary}</p>
+                  </div>
+                  <div className="pt-3 border-t border-gray-200 dark:border-white/10">
+                    <p className="text-[10px] font-mono text-emerald-600 dark:text-[#00ff9d] uppercase mb-1 flex items-center gap-1.5">
+                      <Target className="w-3 h-3" /> PLAN DE ACCIÓN TÁCTICO
+                    </p>
                     <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed italic">{aiRecommendation.actionPlan}</p>
                   </div>
                   
                   <button 
                     onClick={handleAiConsensus}
-                    className="w-full mt-4 py-2 border border-gray-200 dark:border-white/10 rounded-lg text-[10px] uppercase font-bold tracking-widest hover:bg-white dark:hover:bg-white/5 transition-colors"
+                    className="w-full mt-2 py-2 border border-gray-200 dark:border-white/10 rounded-lg text-[10px] uppercase font-bold tracking-widest hover:bg-white dark:hover:bg-white/5 transition-colors"
                   >
                     RE-EVALUAR ESTRATEGIA
                   </button>
