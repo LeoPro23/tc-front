@@ -88,3 +88,45 @@ export interface FieldsTemporalResponse {
     data: any[];
     topFields: string[];
 }
+
+export interface PestEvolutionResponse {
+    pest: string | null;
+    fields: string[];
+    data: any[];
+}
+
+export interface FieldRiskProfileResponse {
+    pests: string[];
+    fields: string[];
+    data: any[];
+}
+
+export interface FieldPerformanceResponse {
+    field: string | null;
+    data: {
+        date: string;
+        campaignAverage: number;
+        fieldIncidence: number;
+    }[];
+}
+
+export interface StrategicRecommendationResponse {
+    summary: string;
+    actionPlan: string;
+}
+
+export interface CompareEvolutionResponse {
+    campaigns: string[];
+    data: any[];
+}
+
+export interface CompareRiskProfileResponse {
+    pests: string[];
+    campaigns: string[];
+    data: any[];
+}
+
+export interface ComparePerformanceResponse {
+    campaigns: string[];
+    data: any[];
+}

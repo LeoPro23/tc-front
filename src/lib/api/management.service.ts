@@ -27,8 +27,9 @@ export const managementApi = {
         const res = await axios.patch(`${API_URL}/campaigns/${id}`, { startDate, endDate }, { headers: getHeaders() });
         return res.data;
     },
-    getMetrics: async (): Promise<import('./management.types').CampaignMetrics> => {
-        const res = await axios.get(`${API_URL}/campaigns/metrics`, { headers: getHeaders() });
+    getMetrics: async (campaignId?: string): Promise<import('./management.types').CampaignMetrics> => {
+        const query = campaignId ? `?campaignId=${campaignId}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/metrics${query}`, { headers: getHeaders() });
         return res.data;
     },
     getPestsTemporal: async (fieldIds?: string[]): Promise<import('./management.types').PestsTemporalResponse> => {
@@ -109,6 +110,54 @@ export const managementApi = {
                 Authorization: `Bearer ${token}`,
             },
         });
+        return res.data;
+    },
+
+    getPestEvolution: async (pest?: string, campaignId?: string): Promise<import('./management.types').PestEvolutionResponse> => {
+        const queryParams = new URLSearchParams();
+        if (pest) queryParams.append('pest', pest);
+        if (campaignId) queryParams.append('campaignId', campaignId);
+        const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/pest-evolution${query}`, { headers: getHeaders() });
+        return res.data;
+    },
+
+    getFieldRiskProfile: async (campaignId?: string): Promise<import('./management.types').FieldRiskProfileResponse> => {
+        const query = campaignId ? `?campaignId=${campaignId}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/field-risk-profile${query}`, { headers: getHeaders() });
+        return res.data;
+    },
+
+    getFieldPerformance: async (field?: string, campaignId?: string): Promise<import('./management.types').FieldPerformanceResponse> => {
+        const queryParams = new URLSearchParams();
+        if (field) queryParams.append('field', field);
+        if (campaignId) queryParams.append('campaignId', campaignId);
+        const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/field-performance${query}`, { headers: getHeaders() });
+        return res.data;
+    },
+
+    getStrategicRecommendation: async (campaignId?: string): Promise<import('./management.types').StrategicRecommendationResponse> => {
+        const query = campaignId ? `?campaignId=${campaignId}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/strategic-recommendation${query}`, { headers: getHeaders() });
+        return res.data;
+    },
+
+    getCompareEvolution: async (campaignIds: string[]): Promise<import('./management.types').CompareEvolutionResponse> => {
+        const query = campaignIds.length > 0 ? `?campaignIds=${campaignIds.join(',')}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/compare-evolution${query}`, { headers: getHeaders() });
+        return res.data;
+    },
+
+    getCompareRiskProfile: async (campaignIds: string[]): Promise<import('./management.types').CompareRiskProfileResponse> => {
+        const query = campaignIds.length > 0 ? `?campaignIds=${campaignIds.join(',')}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/compare-risk-profile${query}`, { headers: getHeaders() });
+        return res.data;
+    },
+
+    getComparePerformance: async (campaignIds: string[]): Promise<import('./management.types').ComparePerformanceResponse> => {
+        const query = campaignIds.length > 0 ? `?campaignIds=${campaignIds.join(',')}` : '';
+        const res = await axios.get(`${API_URL}/campaigns/compare-performance${query}`, { headers: getHeaders() });
         return res.data;
     }
 };

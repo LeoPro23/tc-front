@@ -82,26 +82,26 @@ export function AnalysisCanvasPanel({
   }, [computeImgRect]);
 
   return (
-    <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-3xl overflow-hidden relative aspect-video flex items-center justify-center border border-gray-200 dark:border-white/5 group shadow-sm dark:shadow-none">
+    <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-3xl overflow-hidden relative aspect-square md:aspect-video flex items-center justify-center border border-gray-200 dark:border-white/5 group shadow-sm dark:shadow-none">
       <AnimatePresence mode="wait">
         {!selectedImage ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1 }}
-            className="flex flex-col items-center text-center p-12 cursor-pointer w-full h-full justify-center"
+            className="flex flex-col items-center text-center p-6 md:p-12 cursor-pointer w-full h-full justify-center"
             onClick={() => fileInputRef.current?.click()}
           >
-            <div className="relative mb-8">
+            <div className="relative mb-6 md:mb-8">
               <div className="absolute inset-0 bg-emerald-500/20 dark:bg-[#00ff9d]/20 blur-3xl rounded-full"></div>
-              <div className="w-24 h-24 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center relative z-10 group-hover:border-emerald-400/50 dark:group-hover:border-[#00ff9d]/50 transition-colors">
-                <Upload className="w-10 h-10 text-emerald-600 dark:text-[#00ff9d] animate-bounce" />
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center relative z-10 group-hover:border-emerald-400/50 dark:group-hover:border-[#00ff9d]/50 transition-colors">
+                <Upload className="w-8 h-8 md:w-10 md:h-10 text-emerald-600 dark:text-[#00ff9d] animate-bounce" />
               </div>
             </div>
-            <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-2">
+            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase mb-2">
               Inicializar Escaneo
             </h2>
-            <p className="text-gray-500 max-w-sm mb-8 text-sm font-medium">
+            <p className="text-gray-500 max-w-sm mb-6 md:mb-8 text-xs md:text-sm font-medium">
               Suba imagenes hiperespectrales de hojas para procesamiento neural profundo e
               identificacion de patogenos.
             </p>

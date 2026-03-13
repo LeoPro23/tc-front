@@ -8,6 +8,9 @@ import {
   Activity,
   Dna,
   Cpu,
+  Bot,
+  BrainCircuit,
+  Target,
 } from "lucide-react";
 import {
   XAxis,
@@ -19,7 +22,17 @@ import {
   Area,
   BarChart,
   Bar,
-  Legend,
+  ZAxis,
+  Cell,
+  LineChart,
+  Line,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ComposedChart,
+  Legend
 } from "recharts";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -27,7 +40,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { managementApi } from "@/lib/api/management.service";
-import type { CampaignMetrics, PestsTemporalResponse, FieldsTemporalResponse, FieldCampaign } from "@/lib/api/management.types";
+import type { 
+  Campaign,
+  CampaignMetrics, 
+  PestsTemporalResponse, 
+  FieldsTemporalResponse, 
+  FieldCampaign,
+  PestEvolutionResponse,
+  FieldRiskProfileResponse,
+  FieldPerformanceResponse,
+  StrategicRecommendationResponse,
+  CompareEvolutionResponse,
+  CompareRiskProfileResponse,
+  ComparePerformanceResponse
+} from "@/lib/api/management.types";
 
 export type ChartMode = 'pest' | 'field';
 
@@ -72,23 +98,82 @@ export default function Dashboard() {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  // Decision Center State
+  // Decision Center State
+  const [pestEvolutionData, setPestEvolutionData] = useState<PestEvolutionResponse | null>(null);
+  const [fieldRiskProfileData, setFieldRiskProfileData] = useState<FieldRiskProfileResponse | null>(null);
+  const [fieldPerformanceData, setFieldPerformanceData] = useState<FieldPerformanceResponse | null>(null);
+  
+  const [decisionChartMode, setDecisionChartMode] = useState<'evolution' | 'risk' | 'performance'>('evolution');
+  const [aiRecommendation, setAiRecommendation] = useState<StrategicRecommendationResponse | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  
+  // Nuevo Estado del Selector de Campaña
+  const [campaignList, setCampaignList] = useState<Campaign[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+
+  // States Fase 4: Comparativa de Campañas
+  const [comparisonMode, setComparisonMode] = useState<'lotes' | 'campanas'>('lotes');
+  const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
+  const [compareEvolutionData, setCompareEvolutionData] = useState<CompareEvolutionResponse | null>(null);
+  const [compareRiskProfileData, setCompareRiskProfileData] = useState<CompareRiskProfileResponse | null>(null);
+  const [comparePerformanceData, setComparePerformanceData] = useState<ComparePerformanceResponse | null>(null);
+
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
       try {
         const campaigns = await managementApi.getCampaigns();
-        const activeCampaign = campaigns.find(c => c.isActive);
+        setCampaignList(campaigns);
 
-        if (activeCampaign) {
-          const fields = await managementApi.getEnrolledFields(activeCampaign.id);
+        // Si no hay campaña seleccionada, o la lista cargó de nuevo, priorizar activa o la recién seleccionada
+        let activeId = selectedCampaignId;
+        if (!activeId) {
+          const activeCampaign = campaigns.find(c => c.isActive);
+          if (activeCampaign) {
+             activeId = activeCampaign.id;
+             setSelectedCampaignId(activeId); // Autoseleccionamos la activa por defecto
+          }
+        }
+
+        // Auto-select active campaign for compare mode
+        let currentCompareIds = selectedCampaignIds;
+        if (currentCompareIds.length === 0 && activeId) {
+           currentCompareIds = [activeId];
+           setSelectedCampaignIds(currentCompareIds);
+        }
+
+        if (activeId) {
+          const fields = await managementApi.getEnrolledFields(activeId);
+          setCampaignList(campaigns);
           setCampaignFields(fields);
         }
 
         const [metricsData, temporal, fieldsTemporal] = await Promise.all([
-          managementApi.getMetrics(),
+          managementApi.getMetrics(undefined), // Metricas globales por ahora
           managementApi.getPestsTemporal(selectedFieldIds),
           managementApi.getFieldsTemporal(selectedFieldIds)
         ]);
+
+        if (comparisonMode === 'lotes') {
+          const [evolution, riskProf, performance] = await Promise.all([
+            managementApi.getPestEvolution(undefined, activeId || undefined),
+            managementApi.getFieldRiskProfile(activeId || undefined),
+            managementApi.getFieldPerformance(undefined, activeId || undefined)
+          ]);
+          setPestEvolutionData(evolution);
+          setFieldRiskProfileData(riskProf);
+          setFieldPerformanceData(performance);
+        } else {
+          const [compEvol, compRisk, compPerf] = await Promise.all([
+            managementApi.getCompareEvolution(currentCompareIds),
+            managementApi.getCompareRiskProfile(currentCompareIds),
+            managementApi.getComparePerformance(currentCompareIds)
+          ]);
+          setCompareEvolutionData(compEvol);
+          setCompareRiskProfileData(compRisk);
+          setComparePerformanceData(compPerf);
+        }
 
         setMetrics(metricsData);
         setTemporalData(temporal);
@@ -100,7 +185,7 @@ export default function Dashboard() {
       }
     }
     loadData();
-  }, [selectedFieldIds]);
+  }, [selectedFieldIds, selectedCampaignId, comparisonMode, selectedCampaignIds]);
 
   const toggleFieldSelection = (fieldId: string) => {
     setSelectedFieldIds(prev =>
@@ -108,6 +193,24 @@ export default function Dashboard() {
         ? prev.filter(id => id !== fieldId)
         : [...prev, fieldId]
     );
+  };
+
+  const handleAiConsensus = async () => {
+    if (!campaignFields.length || (!pestEvolutionData && !fieldRiskProfileData && !fieldPerformanceData)) {
+      alert("No hay suficientes datos espaciales o temporales recolectados para un consenso IA de alta certidumbre.");
+      return;
+    }
+    
+    setIsAiLoading(true);
+    try {
+      const recommendation = await managementApi.getStrategicRecommendation(selectedCampaignId || undefined);
+      setAiRecommendation(recommendation);
+    } catch (error) {
+      console.error("Error validando consenso de IA:", error);
+      alert("El motor heurístico falló. Revise su clave API o reintente en unos minutos.");
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   const chartColors = [
@@ -503,6 +606,262 @@ export default function Dashboard() {
                 )
               )}
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Tactical Decision Center */}
+        <div className="lg:col-span-12 bg-white dark:bg-[#111] rounded-3xl p-8 border border-gray-200 dark:border-white/5 shadow-sm dark:shadow-none mb-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Centro de Decisiones Tácticas</h2>
+              <div className="flex gap-4 mt-3 flex-wrap">
+                <button 
+                  onClick={() => setDecisionChartMode('evolution')}
+                  className={`text-[10px] md:text-xs font-mono px-3 py-1.5 rounded-md border text-left transition-all flex items-center gap-2 ${decisionChartMode === 'evolution' ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/30' : 'bg-transparent text-gray-500 border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/30'}`}
+                >
+                  <Activity className="w-3.5 h-3.5" />
+                  EVOLUCIÓN (MÚLTIPLES LOTES)
+                </button>
+                <button 
+                  onClick={() => setDecisionChartMode('risk')}
+                  className={`text-[10px] md:text-xs font-mono px-3 py-1.5 rounded-md border text-left transition-all flex items-center gap-2 ${decisionChartMode === 'risk' ? 'bg-[#ff003c]/10 text-[#ff003c] border-[#ff003c]/30' : 'bg-transparent text-gray-500 border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/30'}`}
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  RIESGO MULTI-VARIABLE
+                </button>
+                <button 
+                  onClick={() => setDecisionChartMode('performance')}
+                  className={`text-[10px] md:text-xs font-mono px-3 py-1.5 rounded-md border text-left transition-all flex items-center gap-2 ${decisionChartMode === 'performance' ? 'bg-blue-500/10 text-blue-500 border-blue-500/30' : 'bg-transparent text-gray-500 border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/30'}`}
+                >
+                  <Scan className="w-3.5 h-3.5" />
+                  RENDIMIENTO RELATIVO
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-col md:items-end gap-2 mt-4 xl:mt-0">
+              {/* Toggle de Modo */}
+              <div className="flex items-center gap-3 mb-2 bg-gray-100 dark:bg-[#1a1a1a] p-1.5 rounded-lg border border-gray-200 dark:border-[#333]">
+                <span className={`text-[10px] font-mono uppercase transition-colors px-2 py-1 rounded-md cursor-pointer ${comparisonMode === 'lotes' ? 'bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-white shadow-sm font-bold' : 'text-gray-500'}`}
+                      onClick={() => setComparisonMode('lotes')}>
+                  Modo Lotes
+                </span>
+                <span className={`text-[10px] font-mono uppercase transition-colors px-2 py-1 rounded-md cursor-pointer ${comparisonMode === 'campanas' ? 'bg-emerald-500 text-white shadow-sm font-bold' : 'text-gray-500'}`}
+                      onClick={() => setComparisonMode('campanas')}>
+                  Inter-Campañas
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <p className="text-[10px] font-mono text-gray-500 uppercase">{comparisonMode === 'lotes' ? 'Período Base' : 'Campañas a Comparar'}</p>
+                {comparisonMode === 'lotes' ? (
+                  <select 
+                    className="bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] text-xs font-mono rounded-md px-3 py-1.5 outline-none focus:border-emerald-500"
+                    value={selectedCampaignId || ''}
+                    onChange={(e) => setSelectedCampaignId(e.target.value)}
+                  >
+                    {campaignList.map(c => (
+                       <option key={c.id} value={c.id}>
+                         {new Date(c.startDate).toLocaleDateString()} - {new Date(c.endDate).toLocaleDateString()} {c.isActive ? '(Activa)' : ''}
+                       </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="flex flex-wrap gap-2 max-w-[280px] justify-end">
+                    {campaignList.map(c => {
+                       const isSelected = selectedCampaignIds.includes(c.id);
+                       return (
+                         <button 
+                           key={c.id} 
+                           onClick={() => {
+                             setSelectedCampaignIds(prev => 
+                               prev.includes(c.id) 
+                                 ? prev.filter(id => id !== c.id) 
+                                 : [...prev, c.id]
+                             );
+                           }}
+                           className={`text-[9px] font-mono px-2 py-1 rounded-full border transition-colors ${isSelected ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold' : 'bg-transparent border-gray-300 dark:border-gray-700 text-gray-500'}`}
+                         >
+                           Campaña {c.id.substring(0,8)} {c.isActive ? '★' : ''}
+                         </button>
+                       )
+                    })}
+                  </div>
+                )}
+              </div>
+              <div className="text-right hidden xl:block mt-2">
+                 <p className="text-[10px] font-mono text-gray-500 uppercase">EVALUACIÓN DE AMENAZAS</p>
+                 <p className="text-xs text-gray-400 uppercase tracking-widest">
+                   {comparisonMode === 'lotes' 
+                     ? `ESTADO: ${campaignList.find(c => c.id === selectedCampaignId)?.isActive ? 'ACTIVA' : 'HISTÓRICO'}`
+                     : `${selectedCampaignIds.length} CAMPAÑAS SELECCIONADAS`
+                   }
+                 </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 h-[380px] w-full relative">
+              {decisionChartMode === 'evolution' ? (
+                // 1. LineChart Multi-Serie
+                (comparisonMode === 'lotes' ? (pestEvolutionData && pestEvolutionData.data?.length > 0) : (compareEvolutionData && compareEvolutionData.data?.length > 0)) ? (
+                  <div className="w-full h-full flex flex-col">
+                    <p className="text-xs font-mono text-gray-500 mb-2 uppercase text-center">
+                      {comparisonMode === 'lotes' ? `Evolución Comparativa: ${pestEvolutionData!.pest}` : 'Evolución Inter-Campaña'}
+                    </p>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={comparisonMode === 'lotes' ? pestEvolutionData!.data : compareEvolutionData!.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#222]" vertical={false} />
+                        <XAxis dataKey={comparisonMode === 'lotes' ? "date" : "relativeTime"} stroke="#9ca3af" fontSize={10} fontStyle="italic" />
+                        <YAxis stroke="#9ca3af" fontSize={10} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: "var(--tooltip-bg, #fff)", border: "1px solid var(--tooltip-border, #e5e7eb)", borderRadius: "12px", color: "var(--tooltip-color, #111)" }}
+                          itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
+                        />
+                        <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', marginTop: '10px' }} />
+                        {comparisonMode === 'lotes' ? (
+                          pestEvolutionData!.fields.map((field, index) => (
+                             <Line 
+                               key={field} type="monotone" dataKey={field} 
+                               stroke={chartColors[index]?.stopColor || "#8884d8"} 
+                               strokeWidth={3} dot={{ r: 3, strokeWidth: 1 }} activeDot={{ r: 5 }}
+                             />
+                          ))
+                        ) : (
+                          compareEvolutionData!.campaigns.map((camp, index) => (
+                             <Line 
+                               key={camp} type="monotone" dataKey={camp} 
+                               stroke={chartColors[index]?.stopColor || "#8884d8"} 
+                               strokeWidth={3} dot={{ r: 3, strokeWidth: 1 }} activeDot={{ r: 5 }}
+                             />
+                          ))
+                        )}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <p className="text-gray-400 font-bold tracking-widest text-lg">SIN DATOS PARA EVOLUCIÓN (LINE CHART)</p>
+                  </div>
+                )
+              ) : decisionChartMode === 'risk' ? (
+                // 2. Radar Chart
+                (comparisonMode === 'lotes' ? (fieldRiskProfileData && fieldRiskProfileData.data.length > 0) : (compareRiskProfileData && compareRiskProfileData.data.length > 0)) ? (
+                  <div className="w-full h-full flex flex-col">
+                    <p className="text-xs font-mono text-gray-500 mb-2 uppercase text-center">Riesgo Multi-plaga</p>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="75%" data={comparisonMode === 'lotes' ? fieldRiskProfileData!.data : compareRiskProfileData!.data}>
+                        <PolarGrid stroke="#e5e7eb" className="dark:stroke-[#333]" />
+                        <PolarAngleAxis dataKey="pest" tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 'bold' }} />
+                        <PolarRadiusAxis angle={90} domain={[0, 'auto']} tick={false} axisLine={false} />
+                        <Tooltip />
+                        <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                        {comparisonMode === 'lotes' ? (
+                          fieldRiskProfileData!.fields.map((field, index) => (
+                            <Radar key={field} name={field} dataKey={field} stroke={chartColors[index]?.stopColor || "#8884d8"} fill={chartColors[index]?.stopColor || "#8884d8"} fillOpacity={0.3} />
+                          ))
+                        ) : (
+                          compareRiskProfileData!.campaigns.map((camp, index) => (
+                            <Radar key={camp} name={camp} dataKey={camp} stroke={chartColors[index]?.stopColor || "#8884d8"} fill={chartColors[index]?.stopColor || "#8884d8"} fillOpacity={0.3} />
+                          ))
+                        )}
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <p className="text-gray-400 font-bold tracking-widest text-lg">SIN DATOS PARA PERFIL DE RIESGO (RADAR CHART)</p>
+                  </div>
+                )
+              ) : (
+                // 3. Composed Chart
+                (comparisonMode === 'lotes' ? (fieldPerformanceData && fieldPerformanceData.data.length > 0) : (comparePerformanceData && comparePerformanceData.data.length > 0)) ? (
+                  <div className="w-full h-full flex flex-col">
+                    <p className="text-xs font-mono text-gray-500 mb-2 uppercase text-center">
+                      {comparisonMode === 'lotes' ? `Rendimiento Relativo: ${fieldPerformanceData!.field} vs Promedio` : 'Rendimiento Inter-Campañas'}
+                    </p>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={comparisonMode === 'lotes' ? fieldPerformanceData!.data : comparePerformanceData!.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#222]" vertical={false} />
+                        <XAxis dataKey={comparisonMode === 'lotes' ? "date" : "relativeTime"} stroke="#9ca3af" fontSize={10} fontStyle="italic" />
+                        <YAxis stroke="#9ca3af" fontSize={10} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: "var(--tooltip-bg, #fff)", border: "1px solid var(--tooltip-border, #e5e7eb)", borderRadius: "12px", color: "var(--tooltip-color, #111)" }}
+                          itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
+                        />
+                        <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', marginTop: '10px' }} />
+                        {comparisonMode === 'lotes' ? (
+                          <>
+                            <Bar dataKey="fieldIncidence" name={`Detecciones: ${fieldPerformanceData!.field}`} barSize={20} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                            <Line type="monotone" dataKey="campaignAverage" name="Promedio Campaña" stroke="#f59e0b" strokeWidth={3} dot={false} strokeDasharray="5 5" />
+                          </>
+                        ) : (
+                          comparePerformanceData!.campaigns.map((camp, index) => (
+                             <Bar key={camp} dataKey={camp} name={camp} barSize={20} fill={chartColors[index]?.stopColor || "#3b82f6"} radius={[4, 4, 0, 0]} />
+                          ))
+                        )}
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <p className="text-gray-400 font-bold tracking-widest text-lg">SIN DATOS PARA RENDIMIENTO (COMPOSED CHART)</p>
+                  </div>
+                )
+              )}
+            </div>
+
+            <div className="lg:col-span-1 bg-gray-50 dark:bg-white/5 p-6 rounded-2xl border border-gray-200 dark:border-white/5 flex flex-col h-[380px] overflow-hidden relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#00ff9d]/5 to-transparent pointer-events-none"></div>
+              
+              <div className="flex items-center gap-3 mb-6 relative z-10">
+                <div className="p-2 bg-[#00ff9d]/10 rounded-lg">
+                  <Bot className="w-5 h-5 text-emerald-600 dark:text-[#00ff9d]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm tracking-tighter uppercase">Consejo Estratégico</h3>
+                  <p className="text-[9px] font-mono text-emerald-600 dark:text-[#00ff9d] tracking-widest uppercase">IA Neural Directiva</p>
+                </div>
+              </div>
+
+              {!aiRecommendation ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center relative z-10">
+                  <BrainCircuit className="w-16 h-16 text-gray-300 dark:text-white/10 mb-4" />
+                  <p className="text-xs text-gray-500 mb-6 max-w-[200px]">
+                    Para optimizar recursos y asignar cuadrillas de forma eficiente, solicita al motor de IA que analice la Matriz de Riesgo y el crecimiento temporal para emitir una directiva unificada.
+                  </p>
+                  <button
+                    onClick={handleAiConsensus}
+                    disabled={isAiLoading}
+                    className="w-full py-3 bg-emerald-500 dark:bg-[#00ff9d] text-white dark:text-black font-bold text-[11px] rounded-xl hover:bg-emerald-600 dark:hover:bg-[#00cc7d] transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  >
+                    {isAiLoading ? (
+                      <span className="flex items-center gap-2"><div className="w-3 h-3 border-2 border-black dark:border-white rounded-full border-t-transparent animate-spin"/> MENTE ENJAMBRE PROCESANDO...</span>
+                    ) : (
+                      <span className="flex items-center gap-2"><Zap className="w-3.5 h-3.5"/> SOLICITAR CONSENSO</span>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar relative z-10 space-y-4">
+                  <div>
+                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">RESUMEN EJECUTIVO (IA)</p>
+                    <p className="text-sm font-medium leading-snug">{aiRecommendation.summary}</p>
+                  </div>
+                  <div className="pt-3 border-t border-gray-200 dark:border-white/10">
+                    <p className="text-[10px] font-mono text-gray-500 uppercase mb-1">PLAN DE ACCIÓN TÁCTICO</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed italic">{aiRecommendation.actionPlan}</p>
+                  </div>
+                  
+                  <button 
+                    onClick={handleAiConsensus}
+                    className="w-full mt-4 py-2 border border-gray-200 dark:border-white/10 rounded-lg text-[10px] uppercase font-bold tracking-widest hover:bg-white dark:hover:bg-white/5 transition-colors"
+                  >
+                    RE-EVALUAR ESTRATEGIA
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

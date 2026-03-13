@@ -704,13 +704,15 @@ export default function AnalysisPage() {
             </div>
 
             {/* Lote de Imagenes - full width */}
-            <div className="lg:col-span-12">
-              <ImageBatchTabs
-                imageEntries={imageEntries}
-                selectedImageIndex={selectedImageIndex}
-                onSelectImage={setSelectedImageIndex}
-              />
-            </div>
+            {imageEntries.length > 0 && (
+              <div className="lg:col-span-12">
+                <ImageBatchTabs
+                  imageEntries={imageEntries}
+                  selectedImageIndex={selectedImageIndex}
+                  onSelectImage={setSelectedImageIndex}
+                />
+              </div>
+            )}
 
             {/* === SECCIÓN DIVIDIDA: Canvas (8 cols) + Sidebar (4 cols) === */}
             <main className="lg:col-span-8 flex flex-col gap-6">
