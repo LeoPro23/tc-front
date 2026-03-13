@@ -22,8 +22,6 @@ import {
   Area,
   BarChart,
   Bar,
-  ZAxis,
-  Cell,
   LineChart,
   Line,
   RadarChart,
@@ -99,7 +97,6 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Decision Center State
-  // Decision Center State
   const [pestEvolutionData, setPestEvolutionData] = useState<PestEvolutionResponse | null>(null);
   const [fieldRiskProfileData, setFieldRiskProfileData] = useState<FieldRiskProfileResponse | null>(null);
   const [fieldPerformanceData, setFieldPerformanceData] = useState<FieldPerformanceResponse | null>(null);
@@ -146,7 +143,6 @@ export default function Dashboard() {
 
         if (activeId) {
           const fields = await managementApi.getEnrolledFields(activeId);
-          setCampaignList(campaigns);
           setCampaignFields(fields);
         }
 
@@ -763,7 +759,7 @@ export default function Dashboard() {
                         />
                         <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', marginTop: '10px' }} />
                         {comparisonMode === 'lotes' ? (
-                          pestEvolutionData?.topFields?.map((field, index) => (
+                          pestEvolutionData?.fields?.map((field: string, index: number) => (
                              <Line 
                                key={field} type="monotone" dataKey={field} 
                                stroke={chartColors[index]?.stopColor || "#8884d8"} 
@@ -920,7 +916,7 @@ export default function Dashboard() {
                     {isAiLoading ? (
                       <span className="flex items-center gap-2"><div className="w-3 h-3 border-2 border-black dark:border-white rounded-full border-t-transparent animate-spin"/> MENTE ENJAMBRE PROCESANDO...</span>
                     ) : (
-                      <span className="flex items-center gap-2"><Zap className="w-3.5 h-3.5"/> SOLICITAR CONSENSO</span>
+                      <span className="flex items-center gap-2"><Zap className="w-3.5 h-3.5"/> SOLICITAR CONSEJO</span>
                     )}
                   </button>
                 </div>
