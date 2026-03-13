@@ -108,9 +108,10 @@ export default function Dashboard() {
   const [aiRecommendation, setAiRecommendation] = useState<StrategicRecommendationResponse | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   
-  // Nuevo Estado del Selector de Campaña
+  // Nuevo Estado del Selector de Campaña y Plaga
   const [campaignList, setCampaignList] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [selectedPest, setSelectedPest] = useState<string | undefined>(undefined);
 
   // States Fase 4: Comparativa de Campañas
   const [comparisonMode, setComparisonMode] = useState<'lotes' | 'campanas'>('lotes');
@@ -157,11 +158,12 @@ export default function Dashboard() {
 
         if (comparisonMode === 'lotes') {
           const [evolution, riskProf, performance] = await Promise.all([
-            managementApi.getPestEvolution(undefined, activeId || undefined),
+            managementApi.getPestEvolution(selectedPest, activeId || undefined),
             managementApi.getFieldRiskProfile(activeId || undefined),
             managementApi.getFieldPerformance(undefined, activeId || undefined)
           ]);
           setPestEvolutionData(evolution);
+          if (evolution.pest) setSelectedPest(evolution.pest);
           setFieldRiskProfileData(riskProf);
           setFieldPerformanceData(performance);
         } else {
@@ -178,14 +180,29 @@ export default function Dashboard() {
         setMetrics(metricsData);
         setTemporalData(temporal);
         setFieldsTemporalData(fieldsTemporal);
-      } catch (err) {
-        console.error("Error loading dashboard data:", err);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
     }
     loadData();
   }, [selectedFieldIds, selectedCampaignId, comparisonMode, selectedCampaignIds]);
+
+  // Effect para refrescar evolución cuando cambie la plaga seleccionada
+  useEffect(() => {
+    async function refreshEvolution() {
+      if (comparisonMode === 'lotes' && selectedCampaignId) {
+        try {
+          const evolution = await managementApi.getPestEvolution(selectedPest, selectedCampaignId);
+          setPestEvolutionData(evolution);
+        } catch (error) {
+          console.error("Error refreshing evolution data:", error);
+        }
+      }
+    }
+    refreshEvolution();
+  }, [selectedPest, selectedCampaignId, comparisonMode]);
 
   const toggleFieldSelection = (fieldId: string) => {
     setSelectedFieldIds(prev =>
@@ -706,13 +723,37 @@ export default function Dashboard() {
                 // 1. LineChart Multi-Serie
                 (comparisonMode === 'lotes' ? (pestEvolutionData && pestEvolutionData.data?.length > 0) : (compareEvolutionData && compareEvolutionData.data?.length > 0)) ? (
                   <div className="w-full h-full flex flex-col">
-                    <p className="text-xs font-mono text-gray-500 mb-2 uppercase text-center">
-                      {comparisonMode === 'lotes' 
-                        ? `Evolución Comparativa: ${pestEvolutionData!.pest === 'tuta_absoluta' ? 'Tuta Absoluta' : pestEvolutionData!.pest === 'mosca_blanca' ? 'Mosca Blanca' : pestEvolutionData!.pest === 'minador' ? 'Minador' : pestEvolutionData!.pest}` 
-                        : 'Evolución Inter-Campaña'}
-                    </p>
+                    <div className="flex justify-between items-center mb-4 px-4">
+                      <p className="text-xs font-mono text-gray-400 uppercase">
+                        {comparisonMode === 'lotes' 
+                          ? `Evolución: ${pestEvolutionData!.pest === 'tuta_absoluta' ? 'Tuta' : pestEvolutionData!.pest === 'mosca_blanca' ? 'Mosca Blanca' : 'Minador'}` 
+                          : 'Comparativa Inter-Campaña'}
+                      </p>
+                      
+                      {comparisonMode === 'lotes' && (
+                        <div className="flex gap-1 bg-gray-50 p-1 rounded-lg">
+                          {[
+                            { id: 'tuta_absoluta', label: 'Tuta' },
+                            { id: 'mosca_blanca', label: 'Mosca' },
+                            { id: 'minador', label: 'Minador' }
+                          ].map(p => (
+                            <button
+                              key={p.id}
+                              onClick={() => setSelectedPest(p.id)}
+                              className={`px-3 py-1 text-[10px] uppercase font-bold transition-all rounded-md ${
+                                selectedPest === p.id 
+                                  ? 'bg-white text-emerald-600 shadow-sm border border-emerald-100' 
+                                  : 'text-gray-400 hover:text-gray-600'
+                              }`}
+                            >
+                              {p.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={comparisonMode === 'lotes' ? pestEvolutionData!.data : compareEvolutionData!.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <LineChart data={comparisonMode === 'lotes' ? pestEvolutionData?.data : compareEvolutionData?.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#222]" vertical={false} />
                         <XAxis dataKey={comparisonMode === 'lotes' ? "date" : "relativeTime"} stroke="#9ca3af" fontSize={10} fontStyle="italic" />
                         <YAxis stroke="#9ca3af" fontSize={10} />
@@ -722,7 +763,7 @@ export default function Dashboard() {
                         />
                         <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', marginTop: '10px' }} />
                         {comparisonMode === 'lotes' ? (
-                          pestEvolutionData!.fields.map((field, index) => (
+                          pestEvolutionData?.topFields?.map((field, index) => (
                              <Line 
                                key={field} type="monotone" dataKey={field} 
                                stroke={chartColors[index]?.stopColor || "#8884d8"} 
@@ -730,7 +771,7 @@ export default function Dashboard() {
                              />
                           ))
                         ) : (
-                          compareEvolutionData!.campaigns.map((camp, index) => (
+                          compareEvolutionData?.campaigns?.map((camp, index) => (
                              <Line 
                                key={camp} type="monotone" dataKey={camp} 
                                stroke={chartColors[index]?.stopColor || "#8884d8"} 
