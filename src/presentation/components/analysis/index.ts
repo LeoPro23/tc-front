@@ -10,6 +10,7 @@ export type {
   Detection,
   ImageAnalysisEntry,
   AgronomicRecipe,
+  AgronomicContext,
   PerImageInterpretation,
   BatchInterpretation,
   ImageNaturalSize,

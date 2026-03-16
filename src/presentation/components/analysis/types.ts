@@ -49,12 +49,23 @@ export interface User {
   role: string;
 }
 
+export interface AgronomicContext {
+  phenologicalState: string | null;
+  soilQuality: string | null;
+  currentClimate: string | null;
+}
+
 export interface ReportData {
   user: User | null;
   detection: Detection | null;
   recipe: AgronomicRecipe | null;
   date: string;
   imageEntries: ImageAnalysisEntry[];
+  batchInterpretation: BatchInterpretation | null;
+  agronomicContext: AgronomicContext | null;
+  isInfected: boolean;
+  bugDensity: number;
+  fieldName: string | null;
 }
 
 export interface ImageNaturalSize {

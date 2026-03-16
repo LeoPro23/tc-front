@@ -763,6 +763,27 @@ export default function AnalysisPage() {
               primaryDetection={primaryDetection}
               targetPest={selectedTargetPest}
               imageEntries={imageEntries}
+              batchInterpretation={globalBatchInterpretation}
+              agronomicContext={
+                phenologicalState || soilQuality || currentClimate
+                  ? {
+                      phenologicalState: phenologicalState || null,
+                      soilQuality: soilQuality || null,
+                      currentClimate: currentClimate || null,
+                    }
+                  : null
+              }
+              isInfected={imageEntries.some(
+                (e) => e.verified && e.detections.length > 0
+              )}
+              bugDensity={imageEntries.reduce(
+                (sum, e) => sum + e.detections.length,
+                0
+              )}
+              fieldName={
+                enrolledFields.find((ef) => ef.id === selectedFieldCampaignId)
+                  ?.field?.name ?? null
+              }
             />
           </>
         )}
