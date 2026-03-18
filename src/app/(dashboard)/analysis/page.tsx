@@ -568,7 +568,7 @@ export default function AnalysisPage() {
                         setSelectedCampaignId(e.target.value);
                         setSelectedFieldCampaignId(""); // reset
                       }}
-                      className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all dark:text-white"
+                      className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/15 rounded-xl p-3 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#00ff9d]/50 outline-none transition-all"
                     >
                       <option value="" disabled>-- Escoja una campaña activa --</option>
                       {campaigns.map(c => (
@@ -601,7 +601,7 @@ export default function AnalysisPage() {
                       <select
                         value={selectedFieldCampaignId}
                         onChange={(e) => setSelectedFieldCampaignId(e.target.value)}
-                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#ff003c] outline-none transition-all dark:text-white"
+                        className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/15 rounded-xl p-3 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#ff003c] dark:focus:ring-[#ff003c]/50 outline-none transition-all"
                       >
                         <option value="" disabled>-- Escoja el campo inscrito --</option>
                         {enrolledFields.map(ef => (
@@ -628,7 +628,7 @@ export default function AnalysisPage() {
                       <select
                         value={phenologicalState}
                         onChange={(e) => setPhenologicalState(e.target.value)}
-                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none dark:text-white"
+                        className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/15 rounded-xl p-2.5 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#00ff9d]/50 outline-none"
                       >
                         <option value="">-- Sin especificar --</option>
                         <option value="Germinación">Germinación</option>
@@ -647,7 +647,7 @@ export default function AnalysisPage() {
                         onChange={(e) => setSoilQuality(e.target.value)}
                         placeholder="Ej. Suelo franco-arcilloso, pH 6.5, buena retención de humedad"
                         rows={2}
-                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none dark:text-white"
+                        className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/15 rounded-xl p-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#00ff9d]/50 outline-none resize-none"
                       />
                     </div>
                     <div>
@@ -657,7 +657,7 @@ export default function AnalysisPage() {
                         onChange={(e) => setCurrentClimate(e.target.value)}
                         placeholder="Ej. Temp. 28°C, humedad relativa 75%, lluvias intermitentes"
                         rows={2}
-                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none dark:text-white"
+                        className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/15 rounded-xl p-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#00ff9d]/50 outline-none resize-none"
                       />
                     </div>
                   </div>

@@ -147,7 +147,7 @@ export default function ScanHistoryPage() {
 
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <select
-            className="px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-bold shadow-sm dark:shadow-none min-w-[200px]"
+            className="px-4 py-2 bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-white/15 rounded-xl text-sm text-gray-900 dark:text-gray-100 font-bold shadow-sm dark:shadow-none min-w-[200px] outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-[#00ff9d]/50"
             value={selectedCampaignId}
             onChange={e => setSelectedCampaignId(e.target.value)}
           >
