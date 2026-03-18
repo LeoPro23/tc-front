@@ -8,6 +8,18 @@ interface PredictionMetadataCardProps {
   filteredDetections: Detection[];
 }
 
+function formatModelName(model: string) {
+  const lower = model.toLowerCase();
+
+  if (lower === "yolov8m_v2_last") return "YOLOv8 Nano";
+
+  if (lower.includes("v8n")) return "YOLOv8 Nano";
+  if (lower.includes("v8m")) return "YOLOv8 Medium";
+  if (lower.includes("yolo26")) return "YOLO26N";
+
+  return model;
+}
+
 export function PredictionMetadataCard({
   modelNames,
   activeFilterLabel,
@@ -27,7 +39,7 @@ export function PredictionMetadataCard({
               Metadatos de Prediccion
             </h3>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
-              MODELOS: {modelNames.length > 0 ? modelNames.join(" | ") : "N/D"}
+              MODELOS: {modelNames.length > 0 ? modelNames.map(formatModelName).join(" | ") : "N/D"}
             </p>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
               FILTRO: {activeFilterLabel}
