@@ -34,6 +34,18 @@ export function AnalysisCanvasPanel({
   onClearImageEntries,
   onReprocess,
 }: AnalysisCanvasPanelProps) {
+  const formatModelName = (model: string) => {
+    const lower = model.toLowerCase();
+
+    if (lower === "yolov8m_v2_last") return "YOLOv8 Nano";
+
+    if (lower.includes("v8n")) return "YOLOv8 Nano";
+    if (lower.includes("v8m")) return "YOLOv8 Medium";
+    if (lower.includes("yolo26")) return "YOLO26N";
+
+    return model;
+  };
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgNaturalSize, setImgNaturalSize] = useState<ImageNaturalSize | null>(null);
   const [imgRect, setImgRect] = useState<ImageRect | null>(null);
@@ -306,7 +318,7 @@ export function AnalysisCanvasPanel({
                     <div className="bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-b-md flex justify-between gap-4">
                       <span>CONFIANZA</span>
                       <span>{det.confidence}%</span>
-                      <span className="max-w-28 truncate uppercase">{det.model}</span>
+                      <span className="max-w-28 truncate uppercase">{formatModelName(det.model)}</span>
                     </div>
                   </div>
                 </motion.div>

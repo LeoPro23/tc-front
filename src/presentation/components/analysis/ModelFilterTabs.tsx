@@ -13,6 +13,18 @@ export function ModelFilterTabs({
   onSelectAll,
   onToggleModel,
 }: ModelFilterTabsProps) {
+  const formatModelName = (model: string) => {
+    const lower = model.toLowerCase();
+
+    if (lower === "yolov8m_v2_last") return "YOLOv8 Nano";
+
+    if (lower.includes("v8n")) return "YOLOv8 Nano";
+    if (lower.includes("v8m")) return "YOLOv8 Medium";
+    if (lower.includes("yolo26")) return "YOLO26N";
+
+    return model;
+  };
+
   return (
     <div className="bg-white dark:bg-black/40 dark:backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/5 px-3 py-3 shadow-sm dark:shadow-none">
       <div className="flex items-center justify-between gap-3 mb-2">
@@ -46,7 +58,7 @@ export function ModelFilterTabs({
                   : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-[#ff003c]/40"
               }`}
             >
-              {model}
+              {formatModelName(model)}
             </button>
           );
         })}

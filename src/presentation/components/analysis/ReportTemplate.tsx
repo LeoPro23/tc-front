@@ -49,6 +49,18 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
     new Set((imageEntries || []).flatMap((e) => e.models))
   );
 
+  const formatModelName = (model: string) => {
+    const lower = model.toLowerCase();
+
+    if (lower === "yolov8m_v2_last") return "YOLOv8 Nano";
+
+    if (lower.includes("v8n")) return "YOLOv8 Nano";
+    if (lower.includes("v8m")) return "YOLOv8 Medium";
+    if (lower.includes("yolo26")) return "YOLO26N";
+
+    return model;
+  };
+
   const infectedImages = imageEntries.filter(
     (e) => e.verified && e.detections.length > 0
   ).length;
@@ -436,7 +448,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
                       className="bg-white/5 p-5 rounded-2xl border border-white/5"
                     >
                       <h3 className="text-sm font-bold text-[#00ff9d] uppercase tracking-widest mb-4 border-b border-white/10 pb-3 flex items-center justify-between">
-                        <span>MODELO: {modelName}</span>
+                        <span>MODELO: {formatModelName(modelName)}</span>
                         <span className="text-[10px] text-white/50">
                           {modelEntries.length} IMAGEN(ES)
                         </span>

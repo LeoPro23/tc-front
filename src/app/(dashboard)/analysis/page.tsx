@@ -495,7 +495,21 @@ export default function AnalysisPage() {
       ? detections
       : detections.filter((d) => selectedModels.includes(d.model));
 
-  const activeFilterLabel = selectedModels.length === 0 ? "TODOS" : selectedModels.join(" | ");
+  const formatModelName = (model: string) => {
+    const lower = model.toLowerCase();
+
+    if (lower === "yolov8m_v2_last") return "YOLOv8 Nano";
+
+    if (lower.includes("v8n")) return "YOLOv8 Nano";
+    if (lower.includes("v8m")) return "YOLOv8 Medium";
+    if (lower.includes("yolo26")) return "YOLO26N";
+
+    return model;
+  };
+
+  const activeFilterLabel = selectedModels.length === 0
+    ? "TODOS"
+    : Array.from(new Set(selectedModels.map(formatModelName))).join(" | ");
 
   const toggleModel = (model: string) => {
     setSelectedModels((prev) =>
@@ -668,34 +682,6 @@ export default function AnalysisPage() {
         {isReadyForAnalysis && (
           <>
             {/* === SECCIÓN FULL-WIDTH (12 cols) === */}
-            {/* Resumen General del Lote */}
-            {globalBatchInterpretation && globalSummary && (
-              <div className="lg:col-span-12 p-6 rounded-3xl border border-emerald-300/30 bg-emerald-50/80 dark:bg-[#00ff9d]/5 dark:border-[#00ff9d]/20">
-                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-700 dark:text-[#00ff9d] mb-2 font-bold">
-                  Resumen General del Lote
-                </p>
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200 mb-4">{globalSummary}</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
-                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Recomendacion General</p>
-                    <p className="text-[11px] text-gray-700 dark:text-gray-200">{globalBatchInterpretation.generalRecommendation}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
-                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Producto General</p>
-                    <p className="text-[11px] text-gray-700 dark:text-gray-200 font-bold">{globalBatchInterpretation.generalProduct}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
-                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Guia Operativa Global</p>
-                    <p className="text-[11px] text-gray-700 dark:text-gray-200 italic">{globalBatchInterpretation.generalOperativeGuide}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-red-200/50 dark:border-red-800/30">
-                    <p className="text-[9px] font-mono uppercase text-red-600 dark:text-red-400 mb-1">Protocolo Bioseguridad del Lote</p>
-                    <p className="text-[11px] text-gray-700 dark:text-gray-200 italic">{globalBatchInterpretation.generalBiosecurityProtocol}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Filtro de Modelos - full width */}
             <div className="lg:col-span-12">
               <ModelFilterTabs
@@ -785,6 +771,34 @@ export default function AnalysisPage() {
                   ?.field?.name ?? null
               }
             />
+
+            {/* === RESUMEN GENERAL DEL LOTE (full width, al final) === */}
+            {globalBatchInterpretation && globalSummary && (
+              <div className="lg:col-span-12 p-6 rounded-3xl border border-emerald-300/30 bg-emerald-50/80 dark:bg-[#00ff9d]/5 dark:border-[#00ff9d]/20">
+                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-700 dark:text-[#00ff9d] mb-2 font-bold">
+                  Resumen General del Lote
+                </p>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200 mb-4">{globalSummary}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
+                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Recomendacion General</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200">{globalBatchInterpretation.generalRecommendation}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
+                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Producto General</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200 font-bold">{globalBatchInterpretation.generalProduct}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-emerald-200/50 dark:border-emerald-800/30">
+                    <p className="text-[9px] font-mono uppercase text-emerald-600 dark:text-emerald-400 mb-1">Guia Operativa Global</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200 italic">{globalBatchInterpretation.generalOperativeGuide}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 border border-red-200/50 dark:border-red-800/30">
+                    <p className="text-[9px] font-mono uppercase text-red-600 dark:text-red-400 mb-1">Protocolo Bioseguridad del Lote</p>
+                    <p className="text-[11px] text-gray-700 dark:text-gray-200 italic">{globalBatchInterpretation.generalBiosecurityProtocol}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
