@@ -46,7 +46,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
     : 0;
 
   const modelsPresent = Array.from(
-    new Set((imageEntries || []).flatMap((e) => e.models))
+    new Set((imageEntries || []).flatMap((e) => e.models)),
   );
 
   const formatModelName = (model: string) => {
@@ -62,10 +62,10 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
   };
 
   const infectedImages = imageEntries.filter(
-    (e) => e.verified && e.detections.length > 0
+    (e) => e.verified && e.detections.length > 0,
   ).length;
   const cleanImages = imageEntries.filter(
-    (e) => e.verified && e.detections.length === 0
+    (e) => e.verified && e.detections.length === 0,
   ).length;
   const rejectedImages = imageEntries.filter((e) => !e.verified).length;
 
@@ -328,7 +328,9 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
                   Producto Recomendado
                 </p>
                 <p className="text-lg font-bold italic text-white leading-tight">
-                  {batchInterpretation?.generalProduct || recipe?.product || "No definido"}
+                  {batchInterpretation?.generalProduct ||
+                    recipe?.product ||
+                    "No definido"}
                 </p>
               </div>
               <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
@@ -438,7 +440,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
               <div className="space-y-8 mt-4">
                 {modelsPresent.map((modelName) => {
                   const modelEntries = imageEntries.filter((e) =>
-                    e.models.includes(modelName)
+                    e.models.includes(modelName),
                   );
                   if (modelEntries.length === 0) return null;
 
@@ -471,7 +473,7 @@ export const ReportTemplate: React.FC<ReportTemplateProps> = ({
                                 crossOrigin="anonymous"
                               />
                               {entry.detections.filter(
-                                (d) => d.model === modelName
+                                (d) => d.model === modelName,
                               ).length > 0 && (
                                 <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
                                   {entry.detections

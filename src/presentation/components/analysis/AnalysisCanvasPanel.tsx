@@ -2,10 +2,65 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import NextImage from "next/image";
-import { Dna, Search, ShieldCheck, Target, Upload } from "lucide-react";
+import { Dna, Search, ShieldCheck, Target, Upload, ZoomIn, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, RefObject } from "react";
 import type { Detection, ImageAnalysisEntry, ImageNaturalSize, ImageRect } from "./types";
+
+// ── Zoom preview component (igual que en historial) ──────────────────────────
+function DetectionZoomPreview({ imageUrl, box }: { imageUrl: string; box: number[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!box || box.length !== 4) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const [x1, y1, x2, y2] = box;
+      const pad = Math.max(x2 - x1, y2 - y1) * 0.3;
+      const sx = Math.max(0, x1 - pad);
+      const sy = Math.max(0, y1 - pad);
+      const sw = Math.min(img.width - sx, x2 - x1 + pad * 2);
+      const sh = Math.min(img.height - sy, y2 - y1 + pad * 2);
+
+      canvas.width = 280;
+      canvas.height = 280;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.fillStyle = "#0a0a0a";
+      ctx.fillRect(0, 0, 280, 280);
+
+      const scale = Math.min(280 / sw, 280 / sh);
+      const dw = sw * scale;
+      const dh = sh * scale;
+      const dx = (280 - dw) / 2;
+      const dy = (280 - dh) / 2;
+      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+
+      // Bounding box en verde
+      const bx1 = dx + (x1 - sx) * scale;
+      const by1 = dy + (y1 - sy) * scale;
+      const bw = (x2 - x1) * scale;
+      const bh = (y2 - y1) * scale;
+      ctx.strokeStyle = "#00ff9d";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(bx1, by1, bw, bh);
+    };
+    img.src = imageUrl;
+  }, [imageUrl, box]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full aspect-square rounded-xl border border-[#00ff9d]/30 bg-black/60"
+    />
+  );
+}
 
 interface AnalysisCanvasPanelProps {
   selectedImage: string | null;
@@ -49,6 +104,7 @@ export function AnalysisCanvasPanel({
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgNaturalSize, setImgNaturalSize] = useState<ImageNaturalSize | null>(null);
   const [imgRect, setImgRect] = useState<ImageRect | null>(null);
+  const [selectedDetection, setSelectedDetection] = useState<Detection | null>(null);
 
   const computeImgRect = useCallback(() => {
     const container = containerRef.current;
@@ -73,9 +129,10 @@ export function AnalysisCanvasPanel({
     if (!selectedImage) {
       setImgNaturalSize(null);
       setImgRect(null);
+      setSelectedDetection(null);
       return;
     }
-
+    setSelectedDetection(null);
     const img = new window.Image();
     img.onload = () => {
       setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
@@ -278,51 +335,67 @@ export function AnalysisCanvasPanel({
             </AnimatePresence>
 
             {!isScanning &&
-              filteredDetections.map((det, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                  }}
-                  className="absolute border-2 border-[#ff003c] rounded-lg shadow-[0_0_30px_rgba(255,0,60,0.4)] z-30 pointer-events-none group/box"
-                  style={
-                    imgRect && imgNaturalSize
-                      ? {
-                          left: `${
-                            imgRect.left + (det.box[0] / imgNaturalSize.w) * imgRect.width
-                          }px`,
-                          top: `${imgRect.top + (det.box[1] / imgNaturalSize.h) * imgRect.height}px`,
-                          width: `${
-                            ((det.box[2] - det.box[0]) / imgNaturalSize.w) * imgRect.width
-                          }px`,
-                          height: `${
-                            ((det.box[3] - det.box[1]) / imgNaturalSize.h) * imgRect.height
-                          }px`,
-                        }
-                      : { display: "none" }
-                  }
-                >
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white -translate-x-1 -translate-y-1"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-white translate-x-1 -translate-y-1"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-white -translate-x-1 translate-y-1"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white translate-x-1 translate-y-1"></div>
+              filteredDetections.map((det, i) => {
+                const isSelected = selectedDetection === det;
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      borderColor: isSelected ? "#00ff9d" : "#ff003c",
+                      boxShadow: isSelected
+                        ? "0 0 40px rgba(0,255,157,0.6)"
+                        : "0 0 30px rgba(255,0,60,0.4)",
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20,
+                    }}
+                    onClick={() =>
+                      setSelectedDetection((prev) => (prev === det ? null : det))
+                    }
+                    className="absolute border-2 rounded-lg z-30 cursor-pointer group/box"
+                    style={
+                      imgRect && imgNaturalSize
+                        ? {
+                            left: `${
+                              imgRect.left + (det.box[0] / imgNaturalSize.w) * imgRect.width
+                            }px`,
+                            top: `${imgRect.top + (det.box[1] / imgNaturalSize.h) * imgRect.height}px`,
+                            width: `${
+                              ((det.box[2] - det.box[0]) / imgNaturalSize.w) * imgRect.width
+                            }px`,
+                            height: `${
+                              ((det.box[3] - det.box[1]) / imgNaturalSize.h) * imgRect.height
+                            }px`,
+                          }
+                        : { display: "none" }
+                    }
+                  >
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white -translate-x-1 -translate-y-1"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-white translate-x-1 -translate-y-1"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-white -translate-x-1 translate-y-1"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white translate-x-1 translate-y-1"></div>
 
-                  <div className="absolute -top-10 left-0 flex flex-col gap-1 drop-shadow-2xl">
-                    <div className="px-3 py-1 bg-[#ff003c] text-white text-[10px] font-black uppercase tracking-tighter italic flex items-center gap-2 rounded-t-md border-b-2 border-black/20">
-                      <Target className="w-3.5 h-3.5" /> {det.pest}
+                    <div className="absolute -top-10 left-0 flex flex-col gap-1 drop-shadow-2xl">
+                      <div className={`px-3 py-1 text-white text-[10px] font-black uppercase tracking-tighter italic flex items-center gap-2 rounded-t-md border-b-2 border-black/20 ${
+                        isSelected ? "bg-[#00ff9d] text-black" : "bg-[#ff003c]"
+                      }`}>
+                        <Target className="w-3.5 h-3.5" /> {det.pest}
+                        {isSelected && <ZoomIn className="w-3 h-3 ml-1" />}
+                      </div>
+                      <div className="bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-b-md flex justify-between gap-4">
+                        <span>CONFIANZA</span>
+                        <span>{det.confidence}%</span>
+                        <span className="max-w-28 truncate uppercase">{formatModelName(det.model)}</span>
+                      </div>
                     </div>
-                    <div className="bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-b-md flex justify-between gap-4">
-                      <span>CONFIANZA</span>
-                      <span>{det.confidence}%</span>
-                      <span className="max-w-28 truncate uppercase">{formatModelName(det.model)}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
 
             {!isScanning &&
               selectedImage &&
@@ -409,6 +482,61 @@ export function AnalysisCanvasPanel({
                   <Search className="w-4 h-4" /> RE-PROCESAR ENLACE NEURAL
                 </button>
               )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── ZOOM PANEL ─────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {selectedDetection && selectedImage && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="mt-4 bg-white dark:bg-black/60 backdrop-blur-xl border border-gray-200 dark:border-[#00ff9d]/20 rounded-2xl p-4 shadow-lg dark:shadow-[0_0_30px_rgba(0,255,157,0.08)]"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-mono font-bold uppercase text-emerald-600 dark:text-[#00ff9d] flex items-center gap-1.5">
+                <ZoomIn className="w-3.5 h-3.5" />
+                Vista Ampliada — Zona Detectada
+              </p>
+              <button
+                onClick={() => setSelectedDetection(null)}
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+              >
+                <X className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 items-start">
+              <DetectionZoomPreview imageUrl={selectedImage} box={selectedDetection.box} />
+              <div className="flex flex-col gap-3 pt-1">
+                <div>
+                  <p className="text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1">Plaga</p>
+                  <p className="text-lg font-black italic uppercase text-[#ff003c] leading-tight">{selectedDetection.pest}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1">Confianza</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-200 dark:bg-white/10 rounded-full h-1.5">
+                      <div
+                        className="h-1.5 rounded-full bg-[#00ff9d]"
+                        style={{ width: `${selectedDetection.confidence}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-black text-gray-800 dark:text-white">{selectedDetection.confidence}%</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1">Modelo IA</p>
+                  <p className="text-xs font-bold text-gray-700 dark:text-gray-200">{formatModelName(selectedDetection.model)}</p>
+                </div>
+                <p className="text-[9px] font-mono text-gray-400 dark:text-gray-600 italic mt-auto">
+                  Haz clic en otro bounding box para cambiar la vista
+                </p>
+              </div>
             </div>
           </motion.div>
         )}
