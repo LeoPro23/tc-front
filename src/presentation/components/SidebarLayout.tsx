@@ -8,19 +8,26 @@ import {
   ScanLine,
   History,
   LogOut,
+  WifiOff,
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { getUser, removeToken } from "@/lib/auth-helpers";
 import { User } from "@/domain/auth/user";
+import { URL_BACKEND } from "@/shared/config/backend-url";
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [offlineInfo, setOfflineInfo] = useState<{
+    offline: boolean;
+    services: Record<string, boolean>;
+  }>({ offline: false, services: {} });
+  const pollRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     const currentUser = getUser<User>();
@@ -31,6 +38,42 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   }, [router]);
+
+  const checkConnectivity = useCallback(async () => {
+    if (!navigator.onLine) {
+      setOfflineInfo({ offline: true, services: {} });
+      return;
+    }
+    try {
+      const res = await fetch(`${URL_BACKEND}/connectivity`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      const data = await res.json();
+      setOfflineInfo({
+        offline: !data.online,
+        services: data.services ?? {},
+      });
+    } catch {
+      setOfflineInfo({ offline: true, services: {} });
+    }
+  }, []);
+
+  useEffect(() => {
+    checkConnectivity();
+    pollRef.current = setInterval(checkConnectivity, 30_000);
+
+    const goOnline = () => checkConnectivity();
+    const goOffline = () =>
+      setOfflineInfo({ offline: true, services: {} });
+
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      clearInterval(pollRef.current);
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, [checkConnectivity]);
 
   if (isLoading) {
     return (
@@ -148,6 +191,24 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+        <AnimatePresence>
+          {offlineInfo.offline && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-amber-500/10 border-b border-amber-500/30 overflow-hidden"
+            >
+              <div className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono tracking-wide text-amber-700 dark:text-amber-400">
+                <WifiOff className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>
+                  MODO OFFLINE — Deteccion de plagas (YOLO) activa. IA
+                  interpretativa y almacenamiento en la nube no disponibles.
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {children}
       </main>
     </div>
