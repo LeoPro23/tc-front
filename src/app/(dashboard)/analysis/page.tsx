@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AnalysisCanvasPanel,
   AnalysisErrorBanner,
@@ -507,6 +507,36 @@ export default function AnalysisPage() {
     return model;
   };
 
+  const findingsSummary = useMemo(() => {
+    const summary: Record<string, { model: string; pest: string; count: number; totalConf: number }> = {};
+    imageEntries.forEach((entry) => {
+      if (entry.verified) {
+        entry.detections.forEach((d) => {
+          const key = `${d.model}_${d.pest}`;
+          if (!summary[key]) {
+            summary[key] = { model: formatModelName(d.model), pest: d.pest, count: 0, totalConf: 0 };
+          }
+          summary[key].count += 1;
+          summary[key].totalConf += d.confidence;
+        });
+      }
+    });
+
+    const groupedByModel: Record<string, { pest: string; count: number; avgConf: number }[]> = {};
+    Object.values(summary).forEach((item) => {
+      if (!groupedByModel[item.model]) {
+        groupedByModel[item.model] = [];
+      }
+      groupedByModel[item.model].push({
+        pest: item.pest,
+        count: item.count,
+        avgConf: Math.round(item.totalConf / item.count),
+      });
+    });
+
+    return groupedByModel;
+  }, [imageEntries]);
+
   const activeFilterLabel = selectedModels.length === 0
     ? "TODOS"
     : Array.from(new Set(selectedModels.map(formatModelName))).join(" | ");
@@ -797,6 +827,33 @@ export default function AnalysisPage() {
                     <p className="text-[11px] text-gray-700 dark:text-gray-200 italic">{globalBatchInterpretation.generalBiosecurityProtocol}</p>
                   </div>
                 </div>
+
+                {Object.keys(findingsSummary).length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-emerald-200/50 dark:border-emerald-800/30">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-700 dark:text-[#00ff9d] mb-4 font-bold">
+                      Desglose de Hallazgos por Modelo
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(findingsSummary).map(([model, pests]) => (
+                        <div key={model} className="p-4 rounded-xl bg-white/40 dark:bg-black/20 border border-emerald-100/50 dark:border-emerald-900/30">
+                          <p className="text-xs font-mono uppercase text-emerald-800 dark:text-emerald-300 mb-3 font-semibold border-b border-emerald-200/30 dark:border-emerald-800/30 pb-2">
+                            Modelo: {model}
+                          </p>
+                          <ul className="space-y-2">
+                            {pests.map((p, idx) => (
+                              <li key={idx} className="text-[11px] text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-[#00ff9d]"></span>
+                                <span>
+                                  Encontró <strong className="text-emerald-900 dark:text-white">{p.count}</strong> {p.count === 1 ? "entidad" : "entidades"} de <strong className="text-emerald-900 dark:text-white">{p.pest}</strong> con un promedio de <strong className="text-emerald-900 dark:text-[#00ff9d]">{p.avgConf}%</strong> de precisión.
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>
