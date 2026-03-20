@@ -337,6 +337,7 @@ export function AnalysisCanvasPanel({
             {!isScanning &&
               filteredDetections.map((det, i) => {
                 const isSelected = selectedDetection === det;
+                const showTag = selectedDetection === null || isSelected;
                 return (
                   <motion.div
                     key={i}
@@ -380,19 +381,21 @@ export function AnalysisCanvasPanel({
                     <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-white -translate-x-1 translate-y-1"></div>
                     <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white translate-x-1 translate-y-1"></div>
 
-                    <div className="absolute -top-10 left-0 flex flex-col gap-1 drop-shadow-2xl">
-                      <div className={`px-3 py-1 text-white text-[10px] font-black uppercase tracking-tighter italic flex items-center gap-2 rounded-t-md border-b-2 border-black/20 ${
-                        isSelected ? "bg-[#00ff9d] text-black" : "bg-[#ff003c]"
-                      }`}>
-                        <Target className="w-3.5 h-3.5" /> {det.pest}
-                        {isSelected && <ZoomIn className="w-3 h-3 ml-1" />}
+                    {showTag && (
+                      <div className="absolute -top-10 left-0 flex flex-col gap-1 drop-shadow-2xl">
+                        <div className={`px-3 py-1 text-white text-[10px] font-black uppercase tracking-tighter italic flex items-center gap-2 rounded-t-md border-b-2 border-black/20 ${
+                          isSelected ? "bg-[#00ff9d] text-black" : "bg-[#ff003c]"
+                        }`}>
+                          <Target className="w-3.5 h-3.5" /> {det.pest}
+                          {isSelected && <ZoomIn className="w-3 h-3 ml-1" />}
+                        </div>
+                        <div className="bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-b-md flex justify-between gap-4">
+                          <span>CONFIANZA</span>
+                          <span>{det.confidence}%</span>
+                          <span className="max-w-28 truncate uppercase">{formatModelName(det.model)}</span>
+                        </div>
                       </div>
-                      <div className="bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-b-md flex justify-between gap-4">
-                        <span>CONFIANZA</span>
-                        <span>{det.confidence}%</span>
-                        <span className="max-w-28 truncate uppercase">{formatModelName(det.model)}</span>
-                      </div>
-                    </div>
+                    )}
                   </motion.div>
                 );
               })}
