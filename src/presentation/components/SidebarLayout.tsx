@@ -27,7 +27,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     offline: boolean;
     services: Record<string, boolean>;
   }>({ offline: false, services: {} });
-  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  const pollRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   useEffect(() => {
     const currentUser = getUser<User>();
