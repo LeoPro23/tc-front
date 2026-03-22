@@ -32,7 +32,7 @@ Crea un archivo llamado `.env` en la raíz de la carpeta `tc-back` y pega lo sig
 ORIGIN_URL=http://localhost:3000
 
 # OpenRouter / AI
-OPENROUTER_API_KEY=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
+OPENROUTER_API_KEY=sk-or-v1-TUAPIKEY
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=google/gemini-2.0-flash-lite-001
 OPENROUTER_INTERPRETATION_MODEL=google/gemini-3.1-flash-lite-preview
